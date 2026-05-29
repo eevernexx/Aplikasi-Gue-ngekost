@@ -1,6 +1,16 @@
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarClock, Flame, TrendingDown, Utensils } from 'lucide-react';
+import {
+  AlertTriangle,
+  CalendarClock,
+  ClipboardList,
+  Download,
+  Flame,
+  Loader2,
+  Sparkles,
+  TrendingDown,
+  Utensils,
+} from 'lucide-react';
 import Header from '../components/layout/Header';
 import StatCard from '../components/ui/StatCard';
 import EmptyState from '../components/ui/EmptyState';
@@ -13,6 +23,8 @@ import {
   lastMonthsCashflow,
   spendingByCategory,
 } from '../lib/analytics';
+import { financialInsights } from '../lib/insights';
+import { exportAnalyticsPdf } from '../lib/exportPdf';
 import { getMonthYear } from '../lib/formatters';
 
 // Lazy-loaded chart components (requirement: React.lazy + Suspense).
@@ -36,9 +48,72 @@ function Section({ title, subtitle, children }) {
   );
 }
 
+const REC_STYLES = {
+  danger: { tag: 'Penting', cls: 'border-danger/30 bg-danger/5', dot: 'bg-danger', tagCls: 'text-danger' },
+  warning: { tag: 'Perhatian', cls: 'border-warning/30 bg-warning/5', dot: 'bg-warning', tagCls: 'text-warning' },
+  info: { tag: 'Info', cls: 'border-primary-light/30 bg-accent/40', dot: 'bg-primary-light', tagCls: 'text-primary' },
+};
+
+function InsightsSection({ insights }) {
+  const { appreciations, conclusions, recommendations } = insights;
+  return (
+    <div className="space-y-4">
+      {appreciations.length > 0 && (
+        <Section title="Apresiasi">
+          <div className="space-y-2.5">
+            {appreciations.map((t, i) => (
+              <div key={i} className="flex gap-2.5">
+                <Sparkles size={16} className="mt-0.5 shrink-0 text-primary-light" />
+                <p className="text-sm leading-relaxed text-text-main">{t}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {conclusions.length > 0 && (
+        <Section title="Kesimpulan">
+          <div className="space-y-2.5">
+            {conclusions.map((t, i) => (
+              <div key={i} className="flex gap-2.5">
+                <ClipboardList size={16} className="mt-0.5 shrink-0 text-text-sub" />
+                <p className="text-sm leading-relaxed text-text-main">{t}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {recommendations.length > 0 && (
+        <Section title="Rekomendasi Kritis">
+          <div className="space-y-2.5">
+            {recommendations.map((r, i) => {
+              const s = REC_STYLES[r.level] || REC_STYLES.info;
+              return (
+                <div key={i} className={`rounded-xl border p-3 ${s.cls}`}>
+                  <div className="mb-1 flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                    <span className={`text-[10px] font-bold uppercase tracking-wide ${s.tagCls}`}>
+                      {s.tag}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-text-main">{r.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      )}
+    </div>
+  );
+}
+
 export default function Analytics() {
   const transactions = useFinanceStore((s) => s.transactions);
+  const monthlyBudget = useFinanceStore((s) => s.monthlyBudget);
   const entries = useFoodStore((s) => s.entries);
+
+  const [downloading, setDownloading] = useState(false);
 
   const cashflow = useMemo(() => lastMonthsCashflow(transactions, 6), [transactions]);
   const byCategory = useMemo(() => spendingByCategory(transactions), [transactions]);
@@ -48,13 +123,48 @@ export default function Analytics() {
     () => analyticsSummary(transactions, entries),
     [transactions, entries]
   );
+  const insights = useMemo(
+    () => financialInsights(transactions, entries, monthlyBudget),
+    [transactions, entries, monthlyBudget]
+  );
 
   const monthLabel = getMonthYear(new Date());
   const hasExpense = byCategory.length > 0;
+  const hasData = transactions.length > 0 || entries.length > 0;
+
+  const handleDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await exportAnalyticsPdf({ transactions, entries, monthlyBudget });
+    } catch (err) {
+      console.error('Gagal membuat PDF:', err);
+      alert('Maaf, gagal membuat PDF. Coba lagi ya.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const downloadButton = hasData ? (
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={downloading}
+      aria-label="Download laporan PDF"
+      className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-semibold text-white shadow-soft-sm active:scale-95 transition-transform disabled:opacity-60"
+    >
+      {downloading ? (
+        <Loader2 size={15} className="animate-spin" />
+      ) : (
+        <Download size={15} />
+      )}
+      {downloading ? 'Membuat…' : 'PDF'}
+    </button>
+  ) : null;
 
   return (
     <>
-      <Header title="Analitik" subtitle={monthLabel} />
+      <Header title="Analitik" subtitle={monthLabel} right={downloadButton} />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -142,6 +252,17 @@ export default function Analytics() {
             <EmptyState title="Belum ada data makan" description="Catat makan lo di tab Food." />
           )}
         </Section>
+
+        {/* Insights: appreciation, conclusion, critical recommendations */}
+        {hasData && (
+          <>
+            <div className="flex items-center gap-2 px-1 pt-2">
+              <AlertTriangle size={16} className="text-primary" />
+              <h2 className="text-sm font-bold text-text-main">Insight & Rekomendasi</h2>
+            </div>
+            <InsightsSection insights={insights} />
+          </>
+        )}
       </motion.div>
     </>
   );

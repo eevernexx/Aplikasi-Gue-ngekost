@@ -31,6 +31,8 @@
 | 🍜 **Food Tracker** | Log makan harian dengan navigasi per hari, timeline per waktu (pagi/siang/sore/malam), serta ringkasan kalori & biaya. |
 | 🎒 **Packing List** | Daftar bawaan multi-trip dengan *progress bar*, detail trip pakai *circular progress*, kategori *collapsible*, dan preset cepat. |
 | 📈 **Analitik** | Grafik cashflow 6 bulan, *donut chart* pengeluaran per kategori, *area chart* harian, dan pie kebiasaan makan (semua *lazy-loaded*). |
+| 🧠 **Insight & Rekomendasi** | Analisis otomatis dari datamu sendiri: apresiasi, kesimpulan, dan rekomendasi kritis (proyeksi over-budget, defisit, pos terlalu terpusat, kebiasaan boros) — tiap poin mengutip angka nyata. |
+| 📄 **Export PDF** | Unduh laporan analitik bulanan (ringkasan, breakdown kategori, insight) sebagai PDF. Generator PDF (jsPDF) di-*lazy load* agar tidak membebani bundel awal. |
 | 🌙 **Dark Mode** | Tema terang/gelap dengan toggle di header, mengikuti preferensi sistem secara default, dan tersimpan otomatis (tanpa *flash* saat reload). |
 | 📱 **PWA** | *Installable*, *offline-first* dengan Workbox, dan *auto-update service worker*. |
 
@@ -48,6 +50,7 @@ Seluruh data disimpan lokal di browser (`localStorage` via **Zustand persist**).
 - **Routing:** React Router v6
 - **Icons:** Lucide React
 - **PWA:** vite-plugin-pwa (Workbox)
+- **PDF:** jsPDF (lazy-loaded)
 - **Utilities:** date-fns, nanoid
 
 ---
@@ -89,7 +92,7 @@ src/
 │                    # EmptyState, TransactionItem, FoodItem, PackingItem,
 │                    # AddTransactionSheet, AddFoodSheet
 ├── hooks/           # useCountUp, useLocalDate
-├── lib/             # formatters, analytics
+├── lib/             # formatters, analytics, insights, exportPdf
 ├── pages/           # Dashboard, Cashflow, FoodTracker,
 │                    # PackingList, PackingTripDetail, Analytics
 ├── store/           # useFinanceStore, useFoodStore, usePackingStore, useThemeStore
