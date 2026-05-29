@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowDownCircle,
   ArrowUpCircle,
+  Pencil,
   TrendingDown,
   TrendingUp,
   Utensils,
@@ -12,6 +13,7 @@ import StatCard from '../components/ui/StatCard';
 import TransactionItem from '../components/ui/TransactionItem';
 import AddTransactionSheet from '../components/ui/AddTransactionSheet';
 import AddFoodSheet from '../components/ui/AddFoodSheet';
+import SetBudgetSheet from '../components/ui/SetBudgetSheet';
 import EmptyState from '../components/ui/EmptyState';
 import { useFinanceStore } from '../store/useFinanceStore';
 import { useFoodStore } from '../store/useFoodStore';
@@ -44,6 +46,7 @@ export default function Dashboard() {
 
   const [txSheet, setTxSheet] = useState({ open: false, type: 'expense' });
   const [foodSheet, setFoodSheet] = useState(false);
+  const [budgetSheet, setBudgetSheet] = useState(false);
 
   const balance = useMemo(() => totalBalance(transactions), [transactions]);
   const { income, expense } = useMemo(() => monthTotals(transactions), [transactions]);
@@ -148,9 +151,14 @@ export default function Dashboard() {
         >
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="font-semibold text-text-main">Budget bulan ini</span>
-            <span className="text-xs text-text-sub">
+            <button
+              type="button"
+              onClick={() => setBudgetSheet(true)}
+              className="flex items-center gap-1 text-xs text-text-sub active:scale-95 transition-transform"
+            >
               {formatRupiah(expense)} / {formatRupiah(monthlyBudget)}
-            </span>
+              <Pencil size={12} className="text-primary-light" />
+            </button>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface">
             <motion.div
@@ -228,6 +236,7 @@ export default function Dashboard() {
         onClose={() => setTxSheet((s) => ({ ...s, open: false }))}
       />
       <AddFoodSheet open={foodSheet} onClose={() => setFoodSheet(false)} />
+      <SetBudgetSheet open={budgetSheet} onClose={() => setBudgetSheet(false)} />
     </>
   );
 }
