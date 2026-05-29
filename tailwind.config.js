@@ -1,22 +1,25 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        // Driven by CSS variables (see src/styles/index.css) so the whole
+        // palette swaps for dark mode without touching component classes.
         primary: {
-          DEFAULT: '#1B4332', // dark forest green
-          mid: '#40916C',
-          light: '#52B788',
+          DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
+          mid: 'rgb(var(--color-primary-mid) / <alpha-value>)',
+          light: 'rgb(var(--color-primary-light) / <alpha-value>)',
         },
-        accent: '#D8F3DC',
-        surface: '#F8FAF8',
-        card: '#FFFFFF',
-        'text-main': '#1C1917',
-        'text-sub': '#6B7280',
-        danger: '#DC2626',
-        warning: '#D97706',
-        'app-border': '#E5E7EB',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        card: 'rgb(var(--color-card) / <alpha-value>)',
+        'text-main': 'rgb(var(--color-text-main) / <alpha-value>)',
+        'text-sub': 'rgb(var(--color-text-sub) / <alpha-value>)',
+        danger: 'rgb(var(--color-danger) / <alpha-value>)',
+        warning: 'rgb(var(--color-warning) / <alpha-value>)',
+        'app-border': 'rgb(var(--color-border) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],

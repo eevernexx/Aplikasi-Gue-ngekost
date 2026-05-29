@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import { addDays } from 'date-fns';
 
 export const PACKING_CATEGORIES = [
   { key: 'Pakaian', emoji: '👕' },
@@ -39,43 +38,10 @@ export const PACKING_PRESETS = {
   'Lain-lain': ['Masker', 'Botol minum', 'Payung'],
 };
 
-const mk = (name, category, checked = false) => ({
-  id: nanoid(),
-  name,
-  category,
-  checked,
-});
-
-const seedTrips = () => [
-  {
-    id: nanoid(),
-    name: 'Pulang Kampung Lebaran',
-    destination: 'Lampung',
-    date: addDays(new Date(), 7).toISOString(),
-    items: [
-      mk('Baju kaos', 'Pakaian', true),
-      mk('Celana panjang', 'Pakaian', true),
-      mk('Pakaian dalam', 'Pakaian', true),
-      mk('Jaket', 'Pakaian', false),
-      mk('Sikat gigi', 'Toiletries', true),
-      mk('Pasta gigi', 'Toiletries', true),
-      mk('Sabun', 'Toiletries', false),
-      mk('KTP', 'Dokumen', true),
-      mk('Tiket', 'Dokumen', true),
-      mk('Uang cash', 'Dokumen', false),
-      mk('Charger HP', 'Elektronik', true),
-      mk('Powerbank', 'Elektronik', false),
-      mk('Antimo', 'Obat-obatan', true),
-      mk('Tolak angin', 'Obat-obatan', false),
-      mk('Oleh-oleh', 'Lain-lain', false),
-    ],
-  },
-];
-
 export const usePackingStore = create(
   persist(
     (set) => ({
-      trips: seedTrips(),
+      trips: [],
       actions: {
         addTrip: (trip) =>
           set((state) => ({
@@ -119,7 +85,9 @@ export const usePackingStore = create(
     }),
     {
       name: 'gue-ngekost-packing',
-      version: 1,
+      version: 2,
+      // Bumped to v2 to wipe the old seed/demo data so the app starts clean.
+      migrate: () => ({ trips: [] }),
       partialize: (state) => ({ trips: state.trips }),
     }
   )

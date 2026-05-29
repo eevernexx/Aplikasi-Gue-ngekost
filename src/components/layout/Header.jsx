@@ -1,5 +1,22 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Moon, Sun } from 'lucide-react';
+import { useThemeStore } from '../../store/useThemeStore';
+
+function ThemeToggle() {
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const isDark = theme === 'dark';
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-text-main shadow-soft-sm active:scale-90 transition-transform"
+    >
+      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+}
 
 export default function Header({ title, subtitle, showBack = false, right = null }) {
   const navigate = useNavigate();
@@ -21,6 +38,7 @@ export default function Header({ title, subtitle, showBack = false, right = null
           <h1 className="truncate text-xl font-bold text-text-main">{title}</h1>
         </div>
         {right}
+        <ThemeToggle />
       </div>
     </header>
   );

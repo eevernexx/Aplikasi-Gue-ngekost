@@ -31,9 +31,10 @@
 | 🍜 **Food Tracker** | Log makan harian dengan navigasi per hari, timeline per waktu (pagi/siang/sore/malam), serta ringkasan kalori & biaya. |
 | 🎒 **Packing List** | Daftar bawaan multi-trip dengan *progress bar*, detail trip pakai *circular progress*, kategori *collapsible*, dan preset cepat. |
 | 📈 **Analitik** | Grafik cashflow 6 bulan, *donut chart* pengeluaran per kategori, *area chart* harian, dan pie kebiasaan makan (semua *lazy-loaded*). |
+| 🌙 **Dark Mode** | Tema terang/gelap dengan toggle di header, mengikuti preferensi sistem secara default, dan tersimpan otomatis (tanpa *flash* saat reload). |
 | 📱 **PWA** | *Installable*, *offline-first* dengan Workbox, dan *auto-update service worker*. |
 
-Seluruh data disimpan lokal di browser (`localStorage` via **Zustand persist**). Tersedia *seed data* agar aplikasi langsung terlihat berisi saat pertama dibuka.
+Seluruh data disimpan lokal di browser (`localStorage` via **Zustand persist**). Aplikasi dimulai dalam keadaan bersih — kamu mengisi datamu sendiri.
 
 ---
 
@@ -91,7 +92,7 @@ src/
 ├── lib/             # formatters, analytics
 ├── pages/           # Dashboard, Cashflow, FoodTracker,
 │                    # PackingList, PackingTripDetail, Analytics
-├── store/           # useFinanceStore, useFoodStore, usePackingStore
+├── store/           # useFinanceStore, useFoodStore, usePackingStore, useThemeStore
 └── styles/          # index.css
 scripts/             # generate-icons.mjs
 ```
@@ -107,7 +108,7 @@ Beberapa keputusan teknis yang diambil agar aplikasi *production-ready*:
 3. **Ikon PWA asli** — `scripts/generate-icons.mjs` (sharp) menghasilkan PNG 192/512/maskable/apple yang valid, bukan placeholder.
 4. **Error boundary** — pakai `react-error-boundary`, otomatis di-*reset* tiap ganti route.
 5. **Count-up animation** — satu implementasi hook `useCountUp` berbasis `requestAnimationFrame` + *easeOutCubic*.
-6. **Seed data relatif** — data contoh dihitung relatif terhadap hari ini (date-fns), jadi selalu terlihat "baru" kapan pun dibuka.
+6. **Theming via CSS variables** — seluruh palet didefinisikan sebagai *channel* RGB di CSS variables, di-*consume* Tailwind lewat `rgb(var(--x) / <alpha-value>)`. Dark mode cukup menukar nilai variabel di selektor `.dark`, tanpa menyentuh class komponen. Tema disuntik sebelum *paint* (inline script) agar tidak ada *flash*.
 
 ---
 

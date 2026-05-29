@@ -2,18 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Colors are stored as space-separated RGB channels so Tailwind can apply
+   opacity modifiers (e.g. bg-warning/10) via rgb(var(--x) / <alpha-value>). */
 :root {
-  --color-primary: #1b4332;
-  --color-primary-mid: #40916c;
-  --color-primary-light: #52b788;
-  --color-accent: #d8f3dc;
-  --color-surface: #f8faf8;
-  --color-card: #ffffff;
-  --color-text-main: #1c1917;
-  --color-text-sub: #6b7280;
-  --color-danger: #dc2626;
-  --color-warning: #d97706;
-  --color-border: #e5e7eb;
+  --color-primary: 27 67 50;
+  --color-primary-mid: 64 145 108;
+  --color-primary-light: 82 183 136;
+  --color-accent: 216 243 220;
+  --color-surface: 248 250 248;
+  --color-card: 255 255 255;
+  --color-text-main: 28 25 23;
+  --color-text-sub: 107 114 128;
+  --color-danger: 220 38 38;
+  --color-warning: 217 151 6;
+  --color-border: 229 231 235;
+}
+
+/* Dark theme — applied by toggling the `dark` class on <html>. */
+.dark {
+  --color-primary: 45 106 79;
+  --color-primary-mid: 64 145 108;
+  --color-primary-light: 82 183 136;
+  --color-accent: 27 58 42;
+  --color-surface: 15 21 17;
+  --color-card: 26 33 28;
+  --color-text-main: 236 242 238;
+  --color-text-sub: 154 168 160;
+  --color-danger: 248 113 113;
+  --color-warning: 251 191 36;
+  --color-border: 42 51 44;
+
+  color-scheme: dark;
 }
 
 @layer base {
@@ -29,9 +48,10 @@
 
   body {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    background-color: var(--color-surface);
-    color: var(--color-text-main);
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-text-main));
     font-size: 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -94,4 +114,9 @@
   background-size: 600px 100%;
   animation: shimmer 1.4s infinite linear;
   border-radius: 0.5rem;
+}
+
+.dark .skeleton {
+  background: #232b25;
+  background-image: linear-gradient(90deg, #232b25 0px, #2e3830 40px, #232b25 80px);
 }
