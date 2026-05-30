@@ -8,12 +8,13 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { formatRupiah, formatRupiahShort } from '../../lib/formatters';
+import { translate } from '../../i18n';
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div className="rounded-xl border border-app-border bg-card px-3 py-2 shadow-soft">
-      <p className="text-xs font-semibold text-text-main">Tgl {label}</p>
+      <p className="text-xs font-semibold text-text-main">{translate('an.dayTip', { label })}</p>
       <p className="text-xs text-primary-mid">{formatRupiah(payload[0].value)}</p>
     </div>
   );
@@ -50,7 +51,7 @@ export default function DailyBarChart({ data }) {
           <Area
             type="monotone"
             dataKey="amount"
-            name="Pengeluaran"
+            name={translate('cf.tabExpense')}
             stroke="#40916C"
             strokeWidth={2}
             fill="url(#dailyFill)"
