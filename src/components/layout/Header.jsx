@@ -21,7 +21,7 @@ function ThemeToggle() {
 export default function Header({ title, subtitle, showBack = false, right = null }) {
   const navigate = useNavigate();
   return (
-    <header className="sticky top-0 z-30 bg-surface/85 px-5 pb-3 pt-5 backdrop-blur-md">
+    <header className="sticky top-0 z-30 bg-surface/85 px-5 pb-3 pt-[calc(env(safe-area-inset-top)+1.25rem)] backdrop-blur-md md:pt-6">
       <div className="flex items-center gap-3">
         {showBack && (
           <button

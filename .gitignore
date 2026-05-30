@@ -36,3 +36,6 @@ Thumbs.db
 
 # Vite / PWA
 dev-dist/
+
+# local Claude config
+.claude/
