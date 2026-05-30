@@ -26,8 +26,8 @@ import { useCountUp } from '../hooks/useCountUp';
 import { useT } from '../i18n';
 import { format } from 'date-fns';
 
-// Greeting key per spec: 05–10:59 morning · 11–14:59 afternoon ·
-// 15–17:59 evening · 18–04:59 night
+// Greeting key per spec: 05:00-10:59 morning, 11:00-14:59 afternoon,
+// 15:00-17:59 evening, 18:00-04:59 night
 const greetingKey = () => {
   const h = new Date().getHours();
   if (h >= 5 && h < 11) return 'greeting.morning';

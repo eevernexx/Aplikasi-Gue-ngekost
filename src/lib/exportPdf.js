@@ -122,7 +122,7 @@ export async function exportAnalyticsPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(255, 255, 255);
-  doc.text('Gue Ngekost — Laporan Analitik', margin, 13);
+  doc.text('Gue Ngekost - Laporan Analitik', margin, 13);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(216, 243, 220);
@@ -195,7 +195,7 @@ export async function exportAnalyticsPdf({
     doc.setFontSize(8);
     doc.setTextColor(...SUB);
     doc.text(
-      'Dibuat dengan Gue Ngekost — data tersimpan lokal di perangkatmu.',
+      'Dibuat dengan Gue Ngekost. Data tersimpan lokal di perangkatmu.',
       margin,
       pageH - 8
     );
