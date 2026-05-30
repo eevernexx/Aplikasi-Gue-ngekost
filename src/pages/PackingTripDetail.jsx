@@ -13,6 +13,7 @@ import {
   usePackingActions,
 } from '../store/usePackingStore';
 import { formatDate } from '../lib/formatters';
+import { useT } from '../i18n';
 
 function CircularProgress({ value }) {
   const size = 96;
@@ -45,7 +46,8 @@ function CircularProgress({ value }) {
   );
 }
 
-function CategorySection({ trip, category, emoji, onAdd, onToggle, onDelete }) {
+function CategorySection({ trip, category, label, emoji, onAdd, onToggle, onDelete }) {
+  const { t } = useT();
   const [open, setOpen] = useState(true);
   const [draft, setDraft] = useState('');
   const items = trip.items.filter((i) => i.category === category);
@@ -64,7 +66,7 @@ function CategorySection({ trip, category, emoji, onAdd, onToggle, onDelete }) {
         className="flex w-full items-center justify-between px-4 py-3"
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-text-main">
-          <span className="text-base">{emoji}</span> {category}
+          <span className="text-base">{emoji}</span> {label}
           <span className="text-xs font-normal text-text-sub">
             ({items.filter((i) => i.checked).length}/{items.length})
           </span>
@@ -97,13 +99,13 @@ function CategorySection({ trip, category, emoji, onAdd, onToggle, onDelete }) {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && submit()}
-                  placeholder={`Tambah ${category.toLowerCase()}...`}
+                  placeholder={t('pack.addItemPh', { cat: label.toLowerCase() })}
                   className="flex-1 rounded-lg border border-app-border bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
                 />
                 <button
                   type="button"
                   onClick={submit}
-                  aria-label="Tambah item"
+                  aria-label={t('pack.addItem')}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white active:scale-90"
                 >
                   <Plus size={18} />
@@ -121,6 +123,7 @@ export default function PackingTripDetail() {
   const { tripId } = useParams();
   const trip = usePackingStore((s) => s.trips.find((t) => t.id === tripId));
   const { addItem, toggleItem, deleteItem } = usePackingActions();
+  const { t, lng } = useT();
   const [presetsOpen, setPresetsOpen] = useState(false);
 
   const progress = useMemo(() => {
@@ -131,9 +134,9 @@ export default function PackingTripDetail() {
   if (!trip) {
     return (
       <>
-        <Header title="Trip tidak ditemukan" showBack />
+        <Header title={t('pack.notFoundTitle')} showBack />
         <div className="px-5">
-          <EmptyState title="Trip tidak ada" description="Trip ini mungkin sudah dihapus." />
+          <EmptyState title={t('pack.notFoundEmpty')} description={t('pack.notFoundDesc')} />
         </div>
       </>
     );
@@ -148,10 +151,13 @@ export default function PackingTripDetail() {
         <div className="flex items-center gap-4 rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
           <CircularProgress value={progress} />
           <div className="min-w-0">
-            <p className="text-xs text-text-sub">Berangkat</p>
+            <p className="text-xs text-text-sub">{t('pack.depart')}</p>
             <p className="text-sm font-semibold text-text-main">{formatDate(trip.date)}</p>
             <p className="mt-1 text-xs text-text-sub">
-              {trip.items.filter((i) => i.checked).length} dari {trip.items.length} barang siap
+              {t('pack.itemsReady', {
+                done: trip.items.filter((i) => i.checked).length,
+                total: trip.items.length,
+              })}
             </p>
           </div>
         </div>
@@ -161,7 +167,7 @@ export default function PackingTripDetail() {
           onClick={() => setPresetsOpen(true)}
           className="w-full rounded-xl border border-dashed border-primary-mid bg-accent/40 py-2.5 text-sm font-semibold text-primary active:scale-[0.99] transition-transform"
         >
-          + Tambah dari daftar cepat
+          {t('pack.addFromQuick')}
         </button>
 
         {/* Category sections */}
@@ -170,6 +176,7 @@ export default function PackingTripDetail() {
             key={cat.key}
             trip={trip}
             category={cat.key}
+            label={lng('packCategory', cat.key)}
             emoji={cat.emoji}
             onAdd={(category, name) => addItem(trip.id, { name, category })}
             onToggle={(itemId) => toggleItem(trip.id, itemId)}
@@ -179,12 +186,12 @@ export default function PackingTripDetail() {
       </div>
 
       {/* Presets sheet */}
-      <BottomSheet open={presetsOpen} onClose={() => setPresetsOpen(false)} title="Daftar Cepat">
+      <BottomSheet open={presetsOpen} onClose={() => setPresetsOpen(false)} title={t('pack.quickList')}>
         <div className="space-y-5">
           {PACKING_CATEGORIES.map((cat) => (
             <div key={cat.key}>
               <p className="mb-2 text-xs font-semibold text-text-sub">
-                {cat.emoji} {cat.key}
+                {cat.emoji} {lng('packCategory', cat.key)}
               </p>
               <div className="flex flex-wrap gap-2">
                 {(PACKING_PRESETS[cat.key] || []).map((preset) => (

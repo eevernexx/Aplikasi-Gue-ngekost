@@ -8,6 +8,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { formatRupiah, formatRupiahShort } from '../../lib/formatters';
+import { translate } from '../../i18n';
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
@@ -45,7 +46,7 @@ export default function CashflowChart({ data }) {
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(82,183,136,0.08)' }} />
           <Bar
             dataKey="income"
-            name="Pemasukan"
+            name={translate('cf.tabIncome')}
             fill="#52B788"
             radius={[6, 6, 0, 0]}
             isAnimationActive
@@ -54,7 +55,7 @@ export default function CashflowChart({ data }) {
           />
           <Bar
             dataKey="expense"
-            name="Pengeluaran"
+            name={translate('cf.tabExpense')}
             fill="#DC2626"
             radius={[6, 6, 0, 0]}
             isAnimationActive

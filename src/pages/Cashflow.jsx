@@ -11,12 +11,14 @@ import EmptyState from '../components/ui/EmptyState';
 import { useFinanceStore, useFinanceActions } from '../store/useFinanceStore';
 import { monthTotals } from '../lib/analytics';
 import { formatRupiah, getDayLabel, getMonthYear } from '../lib/formatters';
+import { useT } from '../i18n';
 
 export default function Cashflow() {
   const transactions = useFinanceStore((s) => s.transactions);
   const { deleteTransaction } = useFinanceActions();
+  const { t } = useT();
 
-  const [tab, setTab] = useState('expense'); // 'income' | 'expense'
+  const [tab, setTab] = useState('expense');
   const [ref, setRef] = useState(new Date());
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -38,14 +40,14 @@ export default function Cashflow() {
 
   return (
     <>
-      <Header title="Cashflow" subtitle="Pemasukan & pengeluaran" />
+      <Header title="Cashflow" subtitle={t('cf.subtitle')} />
 
       <div className="space-y-4 px-5 pt-1">
         {/* Month picker */}
         <div className="flex items-center justify-between rounded-2xl border border-app-border bg-card px-2 py-2 shadow-soft-sm">
           <button
             type="button"
-            aria-label="Bulan sebelumnya"
+            aria-label={t('cf.prevMonth')}
             onClick={() => setRef((d) => addMonths(d, -1))}
             className="flex h-8 w-8 items-center justify-center rounded-full active:scale-90"
           >
@@ -54,7 +56,7 @@ export default function Cashflow() {
           <span className="text-sm font-semibold text-text-main">{getMonthYear(ref)}</span>
           <button
             type="button"
-            aria-label="Bulan berikutnya"
+            aria-label={t('cf.nextMonth')}
             onClick={() => setRef((d) => addMonths(d, 1))}
             className="flex h-8 w-8 items-center justify-center rounded-full active:scale-90"
           >
@@ -65,24 +67,16 @@ export default function Cashflow() {
         {/* Summary */}
         <div className="grid grid-cols-3 gap-2 rounded-2xl border border-app-border bg-card p-3 text-center shadow-soft-sm">
           <div>
-            <p className="text-[11px] text-text-sub">Masuk</p>
-            <p className="mt-0.5 text-xs font-bold text-primary-light">
-              {formatRupiah(totals.income)}
-            </p>
+            <p className="text-[11px] text-text-sub">{t('cf.in')}</p>
+            <p className="mt-0.5 text-xs font-bold text-primary-light">{formatRupiah(totals.income)}</p>
           </div>
           <div className="border-x border-app-border">
-            <p className="text-[11px] text-text-sub">Keluar</p>
-            <p className="mt-0.5 text-xs font-bold text-danger">
-              {formatRupiah(totals.expense)}
-            </p>
+            <p className="text-[11px] text-text-sub">{t('cf.out')}</p>
+            <p className="mt-0.5 text-xs font-bold text-danger">{formatRupiah(totals.expense)}</p>
           </div>
           <div>
-            <p className="text-[11px] text-text-sub">Selisih</p>
-            <p
-              className={`mt-0.5 text-xs font-bold ${
-                totals.net >= 0 ? 'text-primary' : 'text-danger'
-              }`}
-            >
+            <p className="text-[11px] text-text-sub">{t('cf.net')}</p>
+            <p className={`mt-0.5 text-xs font-bold ${totals.net >= 0 ? 'text-primary' : 'text-danger'}`}>
               {formatRupiah(totals.net)}
             </p>
           </div>
@@ -91,26 +85,24 @@ export default function Cashflow() {
         {/* Tabs */}
         <div className="flex rounded-xl bg-card p-1 shadow-soft-sm">
           {[
-            { key: 'expense', label: 'Pengeluaran' },
-            { key: 'income', label: 'Pemasukan' },
-          ].map((t) => (
+            { key: 'expense', label: t('cf.tabExpense') },
+            { key: 'income', label: t('cf.tabIncome') },
+          ].map((tb) => (
             <button
-              key={t.key}
+              key={tb.key}
               type="button"
-              onClick={() => setTab(t.key)}
+              onClick={() => setTab(tb.key)}
               className="relative flex-1 rounded-lg py-2 text-sm font-semibold"
             >
-              {tab === t.key && (
+              {tab === tb.key && (
                 <motion.span
                   layoutId="cashflowTab"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   className="absolute inset-0 rounded-lg bg-accent"
                 />
               )}
-              <span
-                className={`relative ${tab === t.key ? 'text-primary' : 'text-text-sub'}`}
-              >
-                {t.label}
+              <span className={`relative ${tab === tb.key ? 'text-primary' : 'text-text-sub'}`}>
+                {tb.label}
               </span>
             </button>
           ))}
@@ -121,9 +113,7 @@ export default function Cashflow() {
           <div className="space-y-4">
             {grouped.map(([day, items]) => (
               <div key={day}>
-                <p className="mb-1.5 px-1 text-xs font-medium text-text-sub">
-                  {getDayLabel(day)}
-                </p>
+                <p className="mb-1.5 px-1 text-xs font-medium text-text-sub">{getDayLabel(day)}</p>
                 <div className="space-y-2">
                   <AnimatePresence initial={false}>
                     {items.map((tx) => (
@@ -150,21 +140,17 @@ export default function Cashflow() {
         ) : (
           <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm">
             <EmptyState
-              title={`Belum ada ${tab === 'income' ? 'pemasukan' : 'pengeluaran'}`}
-              description={`Belum ada catatan di ${getMonthYear(ref)}.`}
-              actionLabel="Tambah Sekarang"
+              title={tab === 'income' ? t('cf.emptyIncome') : t('cf.emptyExpense')}
+              description={t('cf.emptyDesc', { month: getMonthYear(ref) })}
+              actionLabel={t('cf.addNow')}
               onAction={() => setSheetOpen(true)}
             />
           </div>
         )}
       </div>
 
-      <FAB onClick={() => setSheetOpen(true)} label="Tambah transaksi" />
-      <AddTransactionSheet
-        open={sheetOpen}
-        defaultType={tab}
-        onClose={() => setSheetOpen(false)}
-      />
+      <FAB onClick={() => setSheetOpen(true)} label={t('cf.addTx')} />
+      <AddTransactionSheet open={sheetOpen} defaultType={tab} onClose={() => setSheetOpen(false)} />
     </>
   );
 }

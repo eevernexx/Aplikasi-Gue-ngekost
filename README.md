@@ -1,136 +1,57 @@
-<div align="center">
+# Gue Ngekost
 
-# 🏠 Gue Ngekost
+Aplikasi pencatatan keuangan & gaya hidup harian buat anak kost. Mobile-first **Progressive Web App (PWA)** yang bisa di-install di HP, dan kini **responsif penuh** dari HP kecil sampai desktop.
 
-**Cashflow & daily-life tracker buat anak kost** — finance, food log, dan packing list dalam satu Progressive Web App. Mobile-first, offline-first, dan full Bahasa Indonesia.
+> 🇬🇧 Default **Bahasa Indonesia**, dengan **toggle English** sekali ketuk — sekalian buat belajar bahasa Inggris. Ganti kapan saja di **Pengaturan** atau di layar pertama (onboarding).
 
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#-lisensi)
+## Fitur
 
-</div>
+- **Onboarding** — sekali di awal, aplikasi menanyakan nama lengkap kamu (disimpan lokal, tanpa login).
+- **Dashboard** — sapaan dinamis dengan **namamu** (pagi/siang/sore/malam), saldo, ringkasan bulan ini, aksi cepat, progres budget.
+- **Cashflow** — catat pemasukan/pengeluaran, kelompok per hari, swipe-to-delete.
+- **Food Tracker** — catat makan harian per waktu, kalori & biaya.
+- **Packing List** — checklist barang per trip dengan progress & preset cepat.
+- **Analitik** — grafik cashflow 6 bulan, donut kategori, insight & rekomendasi (bilingual), export PDF.
+- **Pengaturan** — ubah nama, ganti **bahasa (ID/EN)**, tema terang/gelap, reset seluruh data.
+- **Tema** — mode terang/gelap, mengikuti preferensi sistem.
 
----
+## Responsif & UX
 
-## 📖 Tentang Proyek
+- **HP (termasuk rasio 20:9 / 21:9)** — bottom tab bar, aman dari notch/punch-hole (safe-area atas & bawah), tanpa overflow horizontal (teruji dari 320px).
+- **Tablet & Desktop (16:10 / 16:9)** — bottom bar berubah jadi **sidebar rail** vertikal; konten melebar ke kolom yang nyaman & terpusat (bukan sekadar HP yang diperbesar).
+- **Keyboard-aware bottom sheet** — saat keyboard muncul, input & tombol simpan tetap terlihat dan bisa di-scroll (pakai `visualViewport`, ukuran `dvh`, dukungan safe-area).
+- **Anti zoom iOS** — input dipaksa 16px di HP agar Safari tidak auto-zoom saat fokus.
+- **FAB** mengikuti kolom aplikasi, bukan menempel ke pinggir layar di tablet/desktop.
 
-**Gue Ngekost** adalah aplikasi pengelolaan keuangan dan kebutuhan harian yang dirancang khusus untuk **anak kost / mahasiswa rantau**. Dibangun sebagai *single-page application* yang ringan, bisa di-*install* layaknya aplikasi native, dan **berjalan sepenuhnya offline** — semua data tersimpan lokal di perangkat tanpa perlu backend atau login.
+## Teknologi
 
-> Dibuat dengan fokus pada *user experience* mobile: animasi halus, *bottom sheet*, *swipe-to-delete*, dan *count-up animation* untuk pengalaman yang terasa native.
+- React 18 + Vite
+- React Router
+- Zustand (state + persist ke localStorage)
+- Tailwind CSS
+- Framer Motion (animasi)
+- Recharts (grafik)
+- vite-plugin-pwa (installable & offline)
 
----
-
-## ✨ Fitur Utama
-
-| Modul | Deskripsi |
-|---|---|
-| 📊 **Dashboard** | Saldo dengan animasi *count-up*, ringkasan pemasukan/pengeluaran bulan ini, *quick actions*, progress budget, dan transaksi terakhir. |
-| 💸 **Cashflow** | Catat pemasukan & pengeluaran, filter per bulan, tab kategori, list dikelompokkan per tanggal, dan *swipe-to-delete*. |
-| 🍜 **Food Tracker** | Log makan harian dengan navigasi per hari, timeline per waktu (pagi/siang/sore/malam), serta ringkasan kalori & biaya. |
-| 🎒 **Packing List** | Daftar bawaan multi-trip dengan *progress bar*, detail trip pakai *circular progress*, kategori *collapsible*, dan preset cepat. |
-| 📈 **Analitik** | Grafik cashflow 6 bulan, *donut chart* pengeluaran per kategori, *area chart* harian, dan pie kebiasaan makan (semua *lazy-loaded*). |
-| 🧠 **Insight & Rekomendasi** | Analisis otomatis dari datamu sendiri: apresiasi, kesimpulan, dan rekomendasi kritis (proyeksi over-budget, defisit, pos terlalu terpusat, kebiasaan boros) — tiap poin mengutip angka nyata. |
-| 📄 **Export PDF** | Unduh laporan analitik bulanan (ringkasan, breakdown kategori, insight) sebagai PDF. Generator PDF (jsPDF) di-*lazy load* agar tidak membebani bundel awal. |
-| 🌙 **Dark Mode** | Tema terang/gelap dengan toggle di header, mengikuti preferensi sistem secara default, dan tersimpan otomatis (tanpa *flash* saat reload). |
-| 📱 **PWA** | *Installable*, *offline-first* dengan Workbox, dan *auto-update service worker*. |
-
-Seluruh data disimpan lokal di browser (`localStorage` via **Zustand persist**). Aplikasi dimulai dalam keadaan bersih — kamu mengisi datamu sendiri.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework:** React 18 + Vite 5
-- **Styling:** Tailwind CSS 3 (dengan *CSS variables* untuk theming)
-- **State Management:** Zustand (+ `persist` middleware)
-- **Animasi:** Framer Motion
-- **Charts:** Recharts
-- **Routing:** React Router v6
-- **Icons:** Lucide React
-- **PWA:** vite-plugin-pwa (Workbox)
-- **PDF:** jsPDF (lazy-loaded)
-- **Utilities:** date-fns, nanoid
-
----
-
-## 🚀 Cara Menjalankan
-
-> Membutuhkan **Node.js >= 18**
+## Menjalankan
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/eevernexx/Aplikasi-Gue-ngekost.git
-cd Aplikasi-Gue-ngekost
-
-# 2. Install dependencies
 npm install
-
-# 3. Jalankan development server
-npm run dev          # http://localhost:5173
+npm run dev
 ```
 
-### Script Lainnya
+Build production:
 
 ```bash
-npm run build        # build produksi -> folder dist/
-npm run preview      # preview hasil build
-npm run icons        # regenerate ikon PWA (scripts/generate-icons.mjs)
+npm run build
+npm run preview
 ```
 
----
+## Stabilitas (PWA)
 
-## 📁 Struktur Proyek
+- Service worker memakai `cleanupOutdatedCaches`, `clientsClaim`, `skipWaiting`, dan `navigateFallback` agar klien tidak nyangkut di aset/route lama.
+- `lazyWithRetry` memuat ulang **sekali** jika sebuah code-split chunk usang setelah deploy — mencegah layar kosong (blank screen) di tab Analitik.
 
-```
-src/
-├── components/
-│   ├── charts/      # CashflowChart, SpendingDonut, DailyBarChart
-│   ├── layout/      # AppShell, Header, BottomNav, ErrorFallback
-│   └── ui/          # StatCard, BottomSheet, FAB, SwipeToDelete, Badge,
-│                    # EmptyState, TransactionItem, FoodItem, PackingItem,
-│                    # AddTransactionSheet, AddFoodSheet
-├── hooks/           # useCountUp, useLocalDate
-├── lib/             # formatters, analytics, insights, exportPdf
-├── pages/           # Dashboard, Cashflow, FoodTracker,
-│                    # PackingList, PackingTripDetail, Analytics
-├── store/           # useFinanceStore, useFoodStore, usePackingStore, useThemeStore
-└── styles/          # index.css
-scripts/             # generate-icons.mjs
-```
+## Catatan
 
----
-
-## 🎨 Catatan Teknis & Keputusan Desain
-
-Beberapa keputusan teknis yang diambil agar aplikasi *production-ready*:
-
-1. **Single service worker** — SW di-*generate* sepenuhnya oleh `vite-plugin-pwa` (Workbox), menghindari konflik dua SW yang saling rebutan kontrol.
-2. **Single manifest** — manifest didefinisikan satu kali di `vite.config.js` agar browser tidak salah baca.
-3. **Ikon PWA asli** — `scripts/generate-icons.mjs` (sharp) menghasilkan PNG 192/512/maskable/apple yang valid, bukan placeholder.
-4. **Error boundary** — pakai `react-error-boundary`, otomatis di-*reset* tiap ganti route.
-5. **Count-up animation** — satu implementasi hook `useCountUp` berbasis `requestAnimationFrame` + *easeOutCubic*.
-6. **Theming via CSS variables** — seluruh palet didefinisikan sebagai *channel* RGB di CSS variables, di-*consume* Tailwind lewat `rgb(var(--x) / <alpha-value>)`. Dark mode cukup menukar nilai variabel di selektor `.dark`, tanpa menyentuh class komponen. Tema disuntik sebelum *paint* (inline script) agar tidak ada *flash*.
-
----
-
-## 📦 Deploy
-
-Hasil `npm run build` berupa *static files* di folder `dist/` yang bisa di-deploy ke **Vercel**, **Netlify**, **GitHub Pages**, atau hosting statis mana pun.
-
-> ⚠️ Untuk SPA routing, pastikan host melakukan *fallback* semua route ke `index.html`.
-
----
-
-## 📄 Lisensi
-
-Dirilis di bawah lisensi **MIT** — bebas digunakan, dimodifikasi, dan didistribusikan.
-
----
-
-<div align="center">
-
-Dibuat dengan ☕ & 🍜 oleh **[Aryasatya Muhammad Aqsel](https://github.com/eevernexx)**
-
-</div>
+Semua data disimpan lokal di browser (localStorage). Tidak ada backend, tidak ada login.

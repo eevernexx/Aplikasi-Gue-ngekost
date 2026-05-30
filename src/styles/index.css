@@ -69,6 +69,16 @@
     font-family: inherit;
   }
 
+  /* Prevent iOS Safari auto-zoom on focus (<16px triggers it). Phones only so
+     desktop keeps its compact sizing. */
+  @media (max-width: 767px) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
   /* remove number input spinners */
   input[type='number']::-webkit-outer-spin-button,
   input[type='number']::-webkit-inner-spin-button {

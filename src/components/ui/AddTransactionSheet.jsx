@@ -6,11 +6,13 @@ import {
   INCOME_CATEGORIES,
   useFinanceActions,
 } from '../../store/useFinanceStore';
+import { useT } from '../../i18n';
 
 const todayKey = () => format(new Date(), 'yyyy-MM-dd');
 
 export default function AddTransactionSheet({ open, onClose, defaultType = 'expense' }) {
   const { addTransaction } = useFinanceActions();
+  const { t, lng } = useT();
   const [type, setType] = useState(defaultType);
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState(null);
@@ -39,11 +41,11 @@ export default function AddTransactionSheet({ open, onClose, defaultType = 'expe
 
   const handleSave = () => {
     if (!amount || amount <= 0) {
-      setError('Nominal harus lebih dari 0');
+      setError(t('tx.invalidAmount'));
       return;
     }
     if (!category) {
-      setError('Pilih kategori dulu');
+      setError(t('tx.pickCategory'));
       return;
     }
     addTransaction({
@@ -58,31 +60,31 @@ export default function AddTransactionSheet({ open, onClose, defaultType = 'expe
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Catat Transaksi">
+    <BottomSheet open={open} onClose={onClose} title={t('tx.title')}>
       {/* Type toggle */}
       <div className="mb-4 flex rounded-xl bg-surface p-1">
         {[
-          { key: 'income', label: 'Pemasukan' },
-          { key: 'expense', label: 'Pengeluaran' },
-        ].map((t) => (
+          { key: 'income', label: t('tx.income') },
+          { key: 'expense', label: t('tx.expense') },
+        ].map((tab) => (
           <button
-            key={t.key}
+            key={tab.key}
             type="button"
             onClick={() => {
-              setType(t.key);
+              setType(tab.key);
               setCategory(null);
             }}
             className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-colors ${
-              type === t.key ? 'bg-card text-primary shadow-soft-sm' : 'text-text-sub'
+              type === tab.key ? 'bg-card text-primary shadow-soft-sm' : 'text-text-sub'
             }`}
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
 
       {/* Nominal */}
-      <label className="mb-1 block text-xs font-medium text-text-sub">Nominal</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('tx.amount')}</label>
       <div className="mb-4 flex items-center rounded-xl border border-app-border bg-surface px-3">
         <span className="mr-1 text-sm font-semibold text-text-sub">Rp</span>
         <input
@@ -95,7 +97,7 @@ export default function AddTransactionSheet({ open, onClose, defaultType = 'expe
       </div>
 
       {/* Category grid */}
-      <label className="mb-2 block text-xs font-medium text-text-sub">Kategori</label>
+      <label className="mb-2 block text-xs font-medium text-text-sub">{t('tx.category')}</label>
       <div className="mb-4 grid grid-cols-3 gap-2">
         {categories.map((c) => (
           <button
@@ -109,22 +111,22 @@ export default function AddTransactionSheet({ open, onClose, defaultType = 'expe
             }`}
           >
             <span className="text-xl">{c.emoji}</span>
-            <span className="text-[11px] leading-tight text-text-main">{c.name}</span>
+            <span className="text-[11px] leading-tight text-text-main">{lng('txCategory', c.name)}</span>
           </button>
         ))}
       </div>
 
       {/* Note */}
-      <label className="mb-1 block text-xs font-medium text-text-sub">Keterangan</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('tx.note')}</label>
       <input
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="mis. bayar kost bulan ini"
+        placeholder={t('tx.notePh')}
         className="mb-4 w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm text-text-main outline-none focus:border-primary"
       />
 
       {/* Date */}
-      <label className="mb-1 block text-xs font-medium text-text-sub">Tanggal</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('tx.date')}</label>
       <input
         type="date"
         value={date}
@@ -139,7 +141,7 @@ export default function AddTransactionSheet({ open, onClose, defaultType = 'expe
         onClick={handleSave}
         className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white shadow-soft-sm active:scale-[0.98] transition-transform"
       >
-        Simpan
+        {t('common.save')}
       </button>
     </BottomSheet>
   );

@@ -11,19 +11,20 @@ import EmptyState from '../components/ui/EmptyState';
 import SwipeToDelete from '../components/ui/SwipeToDelete';
 import { usePackingStore, usePackingActions } from '../store/usePackingStore';
 import { formatDate } from '../lib/formatters';
+import { useT } from '../i18n';
 
 function tripStatus(items) {
   const total = items.length;
   const done = items.filter((i) => i.checked).length;
   if (total === 0 || done === 0)
-    return { label: 'Belum Mulai', variant: 'neutral', done, total };
-  if (done === total) return { label: 'Siap Berangkat', variant: 'success', done, total };
-  return { label: 'Sedang Packing', variant: 'warning', done, total };
+    return { key: 'pack.statusNotStarted', variant: 'neutral', done, total };
+  if (done === total) return { key: 'pack.statusReady', variant: 'success', done, total };
+  return { key: 'pack.statusPacking', variant: 'warning', done, total };
 }
 
 function CreateTripSheet({ open, onClose }) {
   const { addTrip } = usePackingActions();
-  const navigate = useNavigate();
+  const { t } = useT();
   const [name, setName] = useState('');
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -31,7 +32,7 @@ function CreateTripSheet({ open, onClose }) {
 
   const handleSave = () => {
     if (!name.trim()) {
-      setError('Nama trip wajib diisi');
+      setError(t('pack.tripNameReq'));
       return;
     }
     addTrip({
@@ -47,22 +48,22 @@ function CreateTripSheet({ open, onClose }) {
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Buat Trip Baru">
-      <label className="mb-1 block text-xs font-medium text-text-sub">Nama Trip</label>
+    <BottomSheet open={open} onClose={onClose} title={t('pack.newTrip')}>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('pack.tripName')}</label>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="mis. Pulang Kampung Lebaran"
+        placeholder={t('pack.tripNamePh')}
         className="mb-4 w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm outline-none focus:border-primary"
       />
-      <label className="mb-1 block text-xs font-medium text-text-sub">Tujuan</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('pack.destination')}</label>
       <input
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
-        placeholder="mis. Lampung"
+        placeholder={t('pack.destinationPh')}
         className="mb-4 w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm outline-none focus:border-primary"
       />
-      <label className="mb-1 block text-xs font-medium text-text-sub">Tanggal Berangkat</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('pack.departDate')}</label>
       <input
         type="date"
         value={date}
@@ -75,7 +76,7 @@ function CreateTripSheet({ open, onClose }) {
         onClick={handleSave}
         className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white shadow-soft-sm active:scale-[0.98] transition-transform"
       >
-        Buat Trip
+        {t('pack.createTrip')}
       </button>
     </BottomSheet>
   );
@@ -85,11 +86,12 @@ export default function PackingList() {
   const trips = usePackingStore((s) => s.trips);
   const { deleteTrip } = usePackingActions();
   const navigate = useNavigate();
+  const { t } = useT();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
     <>
-      <Header title="Packing List" subtitle="Checklist barang trip lo" />
+      <Header title={t('pack.title')} subtitle={t('pack.subtitle')} />
 
       <div className="space-y-3 px-5 pt-1">
         {trips.length ? (
@@ -106,7 +108,7 @@ export default function PackingList() {
                   exit={{ opacity: 0, x: -80, transition: { duration: 0.2 } }}
                   transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                 >
-                  <SwipeToDelete onDelete={() => deleteTrip(trip.id)} ariaLabel="Hapus trip">
+                  <SwipeToDelete onDelete={() => deleteTrip(trip.id)} ariaLabel={t('pack.deleteTrip')}>
                     <button
                       type="button"
                       onClick={() => navigate(`/packing/${trip.id}`)}
@@ -114,11 +116,9 @@ export default function PackingList() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h3 className="truncate text-sm font-semibold text-text-main">
-                            {trip.name}
-                          </h3>
+                          <h3 className="truncate text-sm font-semibold text-text-main">{trip.name}</h3>
                           <p className="mt-0.5 flex items-center gap-1 text-xs text-text-sub">
-                            <MapPin size={12} /> {trip.destination || 'Tanpa tujuan'} ·{' '}
+                            <MapPin size={12} /> {trip.destination || t('pack.noDestination')} ·{' '}
                             {formatDate(trip.date)}
                           </p>
                         </div>
@@ -138,7 +138,7 @@ export default function PackingList() {
                         </span>
                       </div>
                       <div className="mt-2.5">
-                        <Badge variant={status.variant}>{status.label}</Badge>
+                        <Badge variant={status.variant}>{t(status.key)}</Badge>
                       </div>
                     </button>
                   </SwipeToDelete>
@@ -149,16 +149,16 @@ export default function PackingList() {
         ) : (
           <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm">
             <EmptyState
-              title="Belum ada trip"
-              description="Bikin checklist biar gak ada barang ketinggalan."
-              actionLabel="Buat Trip Baru"
+              title={t('pack.emptyTitle')}
+              description={t('pack.emptyDesc')}
+              actionLabel={t('pack.newTrip')}
               onAction={() => setSheetOpen(true)}
             />
           </div>
         )}
       </div>
 
-      <FAB onClick={() => setSheetOpen(true)} label="Buat trip baru" />
+      <FAB onClick={() => setSheetOpen(true)} label={t('pack.newTrip')} />
       <CreateTripSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </>
   );

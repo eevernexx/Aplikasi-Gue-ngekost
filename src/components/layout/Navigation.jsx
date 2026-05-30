@@ -1,29 +1,38 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, ArrowLeftRight, Utensils, Luggage, PieChart, Wallet } from 'lucide-react';
+import {
+  LayoutDashboard,
+  ArrowLeftRight,
+  Utensils,
+  Luggage,
+  PieChart,
+  Wallet,
+  Settings as SettingsIcon,
+} from 'lucide-react';
+import { useT } from '../../i18n';
 
 const TABS = [
-  { to: '/', label: 'Beranda', icon: LayoutDashboard },
-  { to: '/cashflow', label: 'Cashflow', icon: ArrowLeftRight },
-  { to: '/food', label: 'Makan', icon: Utensils },
-  { to: '/packing', label: 'Packing', icon: Luggage },
-  { to: '/analytics', label: 'Analitik', icon: PieChart },
+  { to: '/', key: 'nav.home', icon: LayoutDashboard },
+  { to: '/cashflow', key: 'nav.cashflow', icon: ArrowLeftRight },
+  { to: '/food', key: 'nav.food', icon: Utensils },
+  { to: '/packing', key: 'nav.packing', icon: Luggage },
+  { to: '/analytics', key: 'nav.analytics', icon: PieChart },
 ];
 
 const isActive = (pathname, to) =>
-  to === '/'
-    ? pathname === '/'
-    : pathname === to || pathname.startsWith(to + '/');
+  to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(to + '/');
 
 /**
  * Adaptive navigation:
- *  - phones (default): fixed bottom tab bar, aligned to the app column.
- *  - tablets/desktop (md+): in-flow vertical sidebar rail.
- * Both layouts render together but only one is visible per breakpoint,
- * so each uses a distinct layoutId to avoid framer-motion conflicts.
+ *  - phones: fixed bottom tab bar, aligned to the app column.
+ *  - tablets/desktop (md+): in-flow vertical sidebar rail (incl. Settings).
+ * Both render together but only one is visible per breakpoint; distinct
+ * layoutIds avoid framer-motion conflicts.
  */
 export default function Navigation() {
   const { pathname } = useLocation();
+  const { t } = useT();
+  const railItems = [...TABS, { to: '/settings', key: 'nav.settings', icon: SettingsIcon }];
 
   return (
     <>
@@ -36,13 +45,13 @@ export default function Navigation() {
           <span className="truncate text-base font-bold text-text-main">Gue Ngekost</span>
         </div>
         <ul className="flex flex-col gap-1">
-          {TABS.map(({ to, label, icon: Icon }) => {
+          {railItems.map(({ to, key, icon: Icon }) => {
             const active = isActive(pathname, to);
             return (
               <li key={to}>
                 <NavLink
                   to={to}
-                  aria-label={label}
+                  aria-label={t(key)}
                   className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
                   {active && (
@@ -58,7 +67,7 @@ export default function Navigation() {
                     strokeWidth={active ? 2.4 : 2}
                   />
                   <span className={`relative ${active ? 'text-primary' : 'text-text-sub'}`}>
-                    {label}
+                    {t(key)}
                   </span>
                 </NavLink>
               </li>
@@ -70,13 +79,13 @@ export default function Navigation() {
       {/* Bottom tab bar — phones only */}
       <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-app border-t border-app-border bg-card/95 backdrop-blur-md safe-bottom md:hidden">
         <ul className="flex items-stretch justify-around px-1">
-          {TABS.map(({ to, label, icon: Icon }) => {
+          {TABS.map(({ to, key, icon: Icon }) => {
             const active = isActive(pathname, to);
             return (
               <li key={to} className="flex-1">
                 <NavLink
                   to={to}
-                  aria-label={label}
+                  aria-label={t(key)}
                   className="relative flex flex-col items-center gap-0.5 px-1 pb-1.5 pt-2.5"
                 >
                   {active && (
@@ -98,7 +107,7 @@ export default function Navigation() {
                       active ? 'text-primary' : 'text-text-sub'
                     }`}
                   >
-                    {label}
+                    {t(key)}
                   </span>
                 </NavLink>
               </li>

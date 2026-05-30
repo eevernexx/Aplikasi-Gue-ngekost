@@ -7,7 +7,7 @@ import {
   startOfMonth,
   subMonths,
 } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { dfLocale, getLang, label, translate } from '../i18n';
 import { FOOD_CATEGORIES } from '../store/useFoodStore';
 
 const d = (s) => (typeof s === 'string' ? parseISO(s) : s);
@@ -40,7 +40,7 @@ export function lastMonthsCashflow(transactions, n = 6) {
     const ref = subMonths(new Date(), i);
     const { income, expense } = monthTotals(transactions, ref);
     out.push({
-      month: format(ref, 'MMM', { locale: id }),
+      month: format(ref, 'MMM', { locale: dfLocale() }),
       income,
       expense,
     });
@@ -56,8 +56,13 @@ export function spendingByCategory(transactions, ref = new Date()) {
       map.set(t.category, (map.get(t.category) || 0) + t.amount);
     }
   }
+  const en = getLang() === 'en';
   return [...map.entries()]
-    .map(([name, value]) => ({ name, value }))
+    .map(([name, value]) => ({
+      name: en ? label('txCategory', name) : name,
+      raw: name,
+      value,
+    }))
     .sort((a, b) => b.value - a.value);
 }
 
@@ -90,8 +95,12 @@ export function foodBreakdown(entries, ref = new Date()) {
       map.set(e.category, (map.get(e.category) || 0) + 1);
     }
   }
+  const en = getLang() === 'en';
   return [...map.entries()]
-    .map(([key, value]) => ({ name: labels[key] || key, value }))
+    .map(([key, value]) => ({
+      name: en ? label('foodCategory', key) : labels[key] || key,
+      value,
+    }))
     .sort((a, b) => b.value - a.value);
 }
 
@@ -102,7 +111,6 @@ export function analyticsSummary(transactions, entries, ref = new Date()) {
   );
   const totalExpense = expenses.reduce((s, t) => s + t.amount, 0);
 
-  // days elapsed in month (for average)
   const today = ref.getDate();
   const avgPerDay = today > 0 ? totalExpense / today : 0;
 
@@ -123,7 +131,7 @@ export function analyticsSummary(transactions, entries, ref = new Date()) {
     avgPerDay,
     topCategory,
     mealsThisMonth,
-    worstDay: worstDay.amount > 0 ? `Tgl ${worstDay.day}` : '-',
+    worstDay: worstDay.amount > 0 ? translate('an.dayTip', { label: worstDay.day }) : '-',
     worstDayAmount: worstDay.amount,
     totalExpense,
   };

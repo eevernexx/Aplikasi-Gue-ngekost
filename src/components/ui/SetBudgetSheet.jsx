@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import BottomSheet from './BottomSheet';
 import { useFinanceStore, useFinanceActions } from '../../store/useFinanceStore';
 import { formatRupiah } from '../../lib/formatters';
+import { useT } from '../../i18n';
 
 const PRESETS = [1000000, 1500000, 2000000, 2500000, 3000000];
 
 export default function SetBudgetSheet({ open, onClose }) {
   const monthlyBudget = useFinanceStore((s) => s.monthlyBudget);
   const { setMonthlyBudget } = useFinanceActions();
+  const { t } = useT();
   const [amount, setAmount] = useState(monthlyBudget);
 
   // Sync the input with the stored value each time the sheet opens.
@@ -21,14 +23,11 @@ export default function SetBudgetSheet({ open, onClose }) {
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Atur Budget Bulanan">
-      <p className="mb-4 text-xs text-text-sub">
-        Tentuin batas pengeluaranmu sebulan. Progress bar di dashboard bakal
-        ngikutin angka ini.
-      </p>
+    <BottomSheet open={open} onClose={onClose} title={t('budget.title')}>
+      <p className="mb-4 text-xs text-text-sub">{t('budget.hint')}</p>
 
       <label className="mb-1 block text-xs font-medium text-text-sub">
-        Budget per bulan (Rp)
+        {t('budget.perMonth')}
       </label>
       <input
         inputMode="numeric"
@@ -37,7 +36,7 @@ export default function SetBudgetSheet({ open, onClose }) {
         onChange={(e) =>
           setAmount(parseInt(e.target.value.replace(/\D/g, '') || '0', 10))
         }
-        placeholder="mis. 1.500.000"
+        placeholder={t('budget.ph')}
         className="mb-3 w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-base font-semibold text-text-main outline-none focus:border-primary"
       />
 
@@ -64,7 +63,7 @@ export default function SetBudgetSheet({ open, onClose }) {
         onClick={handleSave}
         className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white shadow-soft-sm active:scale-[0.98] transition-transform"
       >
-        Simpan Budget
+        {t('budget.save')}
       </button>
     </BottomSheet>
   );

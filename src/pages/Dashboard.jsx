@@ -17,17 +17,21 @@ import SetBudgetSheet from '../components/ui/SetBudgetSheet';
 import EmptyState from '../components/ui/EmptyState';
 import { useFinanceStore } from '../store/useFinanceStore';
 import { useFoodStore } from '../store/useFoodStore';
+import { useUserStore } from '../store/useUserStore';
 import { monthTotals, totalBalance } from '../lib/analytics';
-import { capitalize, formatDate, formatRupiah, formatTime } from '../lib/formatters';
+import { formatDate, formatRupiah, formatTime } from '../lib/formatters';
 import { useCountUp } from '../hooks/useCountUp';
+import { useT } from '../i18n';
 import { format } from 'date-fns';
 
-const greeting = () => {
+// Greeting key per spec: 05–10:59 morning · 11–14:59 afternoon ·
+// 15–17:59 evening · 18–04:59 night
+const greetingKey = () => {
   const h = new Date().getHours();
-  if (h < 11) return 'Selamat pagi';
-  if (h < 15) return 'Selamat siang';
-  if (h < 18) return 'Selamat sore';
-  return 'Selamat malam';
+  if (h >= 5 && h < 11) return 'greeting.morning';
+  if (h >= 11 && h < 15) return 'greeting.afternoon';
+  if (h >= 15 && h < 18) return 'greeting.evening';
+  return 'greeting.night';
 };
 
 const container = {
@@ -40,9 +44,11 @@ const item = {
 };
 
 export default function Dashboard() {
+  const { t } = useT();
   const transactions = useFinanceStore((s) => s.transactions);
   const monthlyBudget = useFinanceStore((s) => s.monthlyBudget);
   const entries = useFoodStore((s) => s.entries);
+  const fullName = useUserStore((s) => s.fullName);
 
   const [txSheet, setTxSheet] = useState({ open: false, type: 'expense' });
   const [foodSheet, setFoodSheet] = useState(false);
@@ -54,9 +60,7 @@ export default function Dashboard() {
 
   const recent = useMemo(
     () =>
-      [...transactions]
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5),
+      [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5),
     [transactions]
   );
 
@@ -71,86 +75,57 @@ export default function Dashboard() {
   const budgetColor =
     budgetPct >= 90 ? 'bg-danger' : budgetPct >= 70 ? 'bg-warning' : 'bg-primary-light';
 
+  const quickActions = [
+    { labelKey: 'dash.qaIncome', onClick: () => setTxSheet({ open: true, type: 'income' }), icon: ArrowUpCircle },
+    { labelKey: 'dash.qaExpense', onClick: () => setTxSheet({ open: true, type: 'expense' }), icon: ArrowDownCircle },
+    { labelKey: 'dash.qaMeal', onClick: () => setFoodSheet(true), icon: Utensils },
+  ];
+
   return (
     <>
-      <Header title="Gue Ngekost" subtitle={`${greeting()} 👋`} />
+      <Header title={fullName || 'Gue Ngekost'} subtitle={`${t(greetingKey())} 👋`} />
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="space-y-4 px-5 pt-1"
-      >
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-4 px-5 pt-1">
         {/* Balance card */}
-        <motion.div
-          variants={item}
-          className="rounded-3xl bg-primary p-5 text-white shadow-soft"
-        >
+        <motion.div variants={item} className="rounded-3xl bg-primary p-5 text-white shadow-soft">
           <p className="text-xs font-medium text-white/70">{formatDate(new Date())}</p>
-          <p className="mt-3 text-sm text-white/80">Saldo Sekarang</p>
-          <p className="mt-1 text-3xl font-bold tracking-tight">
-            {formatRupiah(animatedBalance)}
-          </p>
+          <p className="mt-3 text-sm text-white/80">{t('dash.balance')}</p>
+          <p className="mt-1 text-3xl font-bold tracking-tight">{formatRupiah(animatedBalance)}</p>
           <div className="mt-4 flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1 text-primary-light">
-              <TrendingUp size={14} /> Masuk {formatRupiah(income)}
+              <TrendingUp size={14} /> {t('dash.in')} {formatRupiah(income)}
             </span>
             <span className="flex items-center gap-1 text-red-300">
-              <TrendingDown size={14} /> Keluar {formatRupiah(expense)}
+              <TrendingDown size={14} /> {t('dash.out')} {formatRupiah(expense)}
             </span>
           </div>
         </motion.div>
 
         {/* Stat cards */}
         <motion.div variants={item} className="grid grid-cols-2 gap-3">
-          <StatCard
-            title="Pemasukan (bln ini)"
-            value={income}
-            icon={ArrowUpCircle}
-            color="light"
-          />
-          <StatCard
-            title="Pengeluaran (bln ini)"
-            value={expense}
-            icon={ArrowDownCircle}
-            color="danger"
-          />
+          <StatCard title={t('dash.incomeMonth')} value={income} icon={ArrowUpCircle} color="light" />
+          <StatCard title={t('dash.expenseMonth')} value={expense} icon={ArrowDownCircle} color="danger" />
         </motion.div>
 
         {/* Quick actions */}
         <motion.div variants={item} className="grid grid-cols-3 gap-3">
-          {[
-            {
-              label: '+ Pemasukan',
-              onClick: () => setTxSheet({ open: true, type: 'income' }),
-              icon: ArrowUpCircle,
-            },
-            {
-              label: '+ Pengeluaran',
-              onClick: () => setTxSheet({ open: true, type: 'expense' }),
-              icon: ArrowDownCircle,
-            },
-            { label: '+ Makan', onClick: () => setFoodSheet(true), icon: Utensils },
-          ].map((a) => (
+          {quickActions.map((a) => (
             <button
-              key={a.label}
+              key={a.labelKey}
               type="button"
               onClick={a.onClick}
               className="flex flex-col items-center gap-1.5 rounded-2xl border border-app-border bg-card py-3 text-xs font-medium text-text-main shadow-soft-sm active:scale-95 transition-transform"
             >
               <a.icon size={20} className="text-primary" />
-              {a.label.replace('+ ', '')}
+              {t(a.labelKey)}
             </button>
           ))}
         </motion.div>
 
         {/* Budget progress */}
-        <motion.div
-          variants={item}
-          className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm"
-        >
+        <motion.div variants={item} className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-semibold text-text-main">Budget bulan ini</span>
+            <span className="font-semibold text-text-main">{t('dash.budgetMonth')}</span>
             <button
               type="button"
               onClick={() => setBudgetSheet(true)}
@@ -169,29 +144,24 @@ export default function Dashboard() {
             />
           </div>
           {budgetPct >= 90 && (
-            <p className="mt-2 text-xs font-medium text-danger">
-              Hati-hati, budget hampir habis!
-            </p>
+            <p className="mt-2 text-xs font-medium text-danger">{t('dash.budgetWarn')}</p>
           )}
         </motion.div>
 
         {/* Recent transactions */}
         <motion.div variants={item}>
           <div className="mb-2 flex items-center justify-between px-1">
-            <h2 className="text-sm font-semibold text-text-main">Transaksi Terakhir</h2>
+            <h2 className="text-sm font-semibold text-text-main">{t('dash.recentTx')}</h2>
           </div>
           <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
             {recent.length ? (
               recent.map((tx, i) => (
-                <div
-                  key={tx.id}
-                  className={i > 0 ? 'border-t border-app-border' : ''}
-                >
+                <div key={tx.id} className={i > 0 ? 'border-t border-app-border' : ''}>
                   <TransactionItem tx={tx} />
                 </div>
               ))
             ) : (
-              <EmptyState title="Belum ada transaksi" description="Catat pemasukan atau pengeluaran pertama lo." />
+              <EmptyState title={t('dash.emptyTxTitle')} description={t('dash.emptyTxDesc')} />
             )}
           </div>
         </motion.div>
@@ -199,9 +169,9 @@ export default function Dashboard() {
         {/* Today's food */}
         <motion.div variants={item}>
           <div className="mb-2 flex items-center justify-between px-1">
-            <h2 className="text-sm font-semibold text-text-main">Makan Hari Ini</h2>
+            <h2 className="text-sm font-semibold text-text-main">{t('dash.todayFood')}</h2>
             {todayCalories > 0 && (
-              <span className="text-xs text-text-sub">~{todayCalories} kkal</span>
+              <span className="text-xs text-text-sub">{t('dash.kcalApprox', { n: todayCalories })}</span>
             )}
           </div>
           <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
@@ -209,9 +179,7 @@ export default function Dashboard() {
               todayFood.map((e, i) => (
                 <div
                   key={e.id}
-                  className={`flex items-center gap-3 px-4 py-2.5 ${
-                    i > 0 ? 'border-t border-app-border' : ''
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-2.5 ${i > 0 ? 'border-t border-app-border' : ''}`}
                 >
                   <span className="text-base">🍽️</span>
                   <span className="flex-1 truncate text-sm text-text-main">{e.name}</span>
@@ -220,9 +188,9 @@ export default function Dashboard() {
               ))
             ) : (
               <EmptyState
-                title="Belum makan apa-apa"
-                description="Jangan lupa makan, catat di sini ya."
-                actionLabel="Catat Makan"
+                title={t('dash.emptyFoodTitle')}
+                description={t('dash.emptyFoodDesc')}
+                actionLabel={t('dash.logMeal')}
                 onAction={() => setFoodSheet(true)}
               />
             )}

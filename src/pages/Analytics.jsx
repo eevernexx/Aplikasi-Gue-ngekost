@@ -1,4 +1,5 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { lazyWithRetry } from '../lib/lazyWithRetry';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -26,11 +27,12 @@ import {
 import { financialInsights } from '../lib/insights';
 import { exportAnalyticsPdf } from '../lib/exportPdf';
 import { getMonthYear } from '../lib/formatters';
+import { useT } from '../i18n';
 
 // Lazy-loaded chart components (requirement: React.lazy + Suspense).
-const CashflowChart = lazy(() => import('../components/charts/CashflowChart'));
-const SpendingDonut = lazy(() => import('../components/charts/SpendingDonut'));
-const DailyBarChart = lazy(() => import('../components/charts/DailyBarChart'));
+const CashflowChart = lazyWithRetry(() => import('../components/charts/CashflowChart'), 'cashflow');
+const SpendingDonut = lazyWithRetry(() => import('../components/charts/SpendingDonut'), 'donut');
+const DailyBarChart = lazyWithRetry(() => import('../components/charts/DailyBarChart'), 'daily');
 
 const ChartSkeleton = () => <div className="skeleton h-56 w-full rounded-xl" />;
 
@@ -49,17 +51,18 @@ function Section({ title, subtitle, children }) {
 }
 
 const REC_STYLES = {
-  danger: { tag: 'Penting', cls: 'border-danger/30 bg-danger/5', dot: 'bg-danger', tagCls: 'text-danger' },
-  warning: { tag: 'Perhatian', cls: 'border-warning/30 bg-warning/5', dot: 'bg-warning', tagCls: 'text-warning' },
-  info: { tag: 'Info', cls: 'border-primary-light/30 bg-accent/40', dot: 'bg-primary-light', tagCls: 'text-primary' },
+  danger: { tagKey: 'an.tagImportant', cls: 'border-danger/30 bg-danger/5', dot: 'bg-danger', tagCls: 'text-danger' },
+  warning: { tagKey: 'an.tagAttention', cls: 'border-warning/30 bg-warning/5', dot: 'bg-warning', tagCls: 'text-warning' },
+  info: { tagKey: 'an.tagInfo', cls: 'border-primary-light/30 bg-accent/40', dot: 'bg-primary-light', tagCls: 'text-primary' },
 };
 
 function InsightsSection({ insights }) {
+  const { t } = useT();
   const { appreciations, conclusions, recommendations } = insights;
   return (
     <div className="space-y-4">
       {appreciations.length > 0 && (
-        <Section title="Apresiasi">
+        <Section title={t('an.appreciation')}>
           <div className="space-y-2.5">
             {appreciations.map((t, i) => (
               <div key={i} className="flex gap-2.5">
@@ -72,7 +75,7 @@ function InsightsSection({ insights }) {
       )}
 
       {conclusions.length > 0 && (
-        <Section title="Kesimpulan">
+        <Section title={t('an.conclusion')}>
           <div className="space-y-2.5">
             {conclusions.map((t, i) => (
               <div key={i} className="flex gap-2.5">
@@ -85,7 +88,7 @@ function InsightsSection({ insights }) {
       )}
 
       {recommendations.length > 0 && (
-        <Section title="Rekomendasi Kritis">
+        <Section title={t('an.recommendation')}>
           <div className="space-y-2.5">
             {recommendations.map((r, i) => {
               const s = REC_STYLES[r.level] || REC_STYLES.info;
@@ -94,7 +97,7 @@ function InsightsSection({ insights }) {
                   <div className="mb-1 flex items-center gap-1.5">
                     <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
                     <span className={`text-[10px] font-bold uppercase tracking-wide ${s.tagCls}`}>
-                      {s.tag}
+                      {t(s.tagKey)}
                     </span>
                   </div>
                   <p className="text-sm leading-relaxed text-text-main">{r.text}</p>
@@ -109,6 +112,7 @@ function InsightsSection({ insights }) {
 }
 
 export default function Analytics() {
+  const { t } = useT();
   const transactions = useFinanceStore((s) => s.transactions);
   const monthlyBudget = useFinanceStore((s) => s.monthlyBudget);
   const entries = useFoodStore((s) => s.entries);
@@ -138,8 +142,8 @@ export default function Analytics() {
     try {
       await exportAnalyticsPdf({ transactions, entries, monthlyBudget });
     } catch (err) {
-      console.error('Gagal membuat PDF:', err);
-      alert('Maaf, gagal membuat PDF. Coba lagi ya.');
+      console.error('PDF export failed:', err);
+      alert(t('an.pdfError'));
     } finally {
       setDownloading(false);
     }
@@ -150,7 +154,7 @@ export default function Analytics() {
       type="button"
       onClick={handleDownload}
       disabled={downloading}
-      aria-label="Download laporan PDF"
+      aria-label={t('an.pdfAria')}
       className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-semibold text-white shadow-soft-sm active:scale-95 transition-transform disabled:opacity-60"
     >
       {downloading ? (
@@ -158,13 +162,13 @@ export default function Analytics() {
       ) : (
         <Download size={15} />
       )}
-      {downloading ? 'Membuat…' : 'PDF'}
+      {downloading ? t('an.generating') : t('an.pdf')}
     </button>
   ) : null;
 
   return (
     <>
-      <Header title="Analitik" subtitle={monthLabel} right={downloadButton} />
+      <Header title={t('an.title')} subtitle={monthLabel} right={downloadButton} />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -175,16 +179,16 @@ export default function Analytics() {
         {/* Summary cards */}
         <div className="grid grid-cols-2 gap-3">
           <StatCard
-            title="Rata-rata / hari"
+            title={t('an.avgPerDay')}
             value={summary.avgPerDay}
             icon={TrendingDown}
             color="danger"
           />
           <StatCard
-            title="Total makan"
+            title={t('an.totalMeals')}
             value={summary.mealsThisMonth}
             isCurrency={false}
-            suffix=" menu"
+            suffix={t('an.menuSuffix')}
             icon={Utensils}
             color="light"
           />
@@ -192,7 +196,7 @@ export default function Analytics() {
             <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-primary">
               <Flame size={18} />
             </span>
-            <p className="text-xs font-medium text-text-sub">Kategori terbesar</p>
+            <p className="text-xs font-medium text-text-sub">{t('an.topCategory')}</p>
             <p className="mt-0.5 truncate text-sm font-bold text-text-main">
               {summary.topCategory}
             </p>
@@ -201,7 +205,7 @@ export default function Analytics() {
             <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-warning/10 text-warning">
               <CalendarClock size={18} />
             </span>
-            <p className="text-xs font-medium text-text-sub">Hari paling boros</p>
+            <p className="text-xs font-medium text-text-sub">{t('an.worstDay')}</p>
             <p className="mt-0.5 truncate text-sm font-bold text-text-main">
               {summary.worstDay}
             </p>
@@ -209,47 +213,47 @@ export default function Analytics() {
         </div>
 
         {/* Monthly cashflow */}
-        <Section title="Cashflow 6 Bulan" subtitle="Pemasukan vs pengeluaran">
+        <Section title={t('an.cashflow6')} subtitle={t('an.cashflow6Sub')}>
           <Suspense fallback={<ChartSkeleton />}>
             <CashflowChart data={cashflow} />
           </Suspense>
         </Section>
 
         {/* Spending donut */}
-        <Section title="Pengeluaran per Kategori" subtitle={monthLabel}>
+        <Section title={t('an.byCategory')} subtitle={monthLabel}>
           {hasExpense ? (
             <Suspense fallback={<ChartSkeleton />}>
               <SpendingDonut
                 data={byCategory}
-                centerLabel="Total"
+                centerLabel={t('an.total')}
                 centerValue={summary.totalExpense}
               />
             </Suspense>
           ) : (
-            <EmptyState title="Belum ada pengeluaran" description="Catat dulu pengeluaran bulan ini." />
+            <EmptyState title={t('an.emptyExpenseTitle')} description={t('an.emptyExpenseDesc')} />
           )}
         </Section>
 
         {/* Daily spending */}
-        <Section title="Pengeluaran Harian" subtitle={monthLabel}>
+        <Section title={t('an.daily')} subtitle={monthLabel}>
           <Suspense fallback={<ChartSkeleton />}>
             <DailyBarChart data={daily} />
           </Suspense>
         </Section>
 
         {/* Food breakdown */}
-        <Section title="Kebiasaan Makan" subtitle="Berdasarkan sumber makanan">
+        <Section title={t('an.foodHabit')} subtitle={t('an.foodHabitSub')}>
           {food.length ? (
             <Suspense fallback={<ChartSkeleton />}>
               <SpendingDonut
                 data={food}
                 variant="pie"
                 colors={FOOD_COLORS}
-                valueFormatter={(v) => `${v} menu`}
+                valueFormatter={(v) => t('an.menuUnit', { n: v })}
               />
             </Suspense>
           ) : (
-            <EmptyState title="Belum ada data makan" description="Catat makan lo di tab Food." />
+            <EmptyState title={t('an.emptyFoodTitle')} description={t('an.emptyFoodDesc')} />
           )}
         </Section>
 
@@ -258,7 +262,7 @@ export default function Analytics() {
           <>
             <div className="flex items-center gap-2 px-1 pt-2">
               <AlertTriangle size={16} className="text-primary" />
-              <h2 className="text-sm font-bold text-text-main">Insight & Rekomendasi</h2>
+              <h2 className="text-sm font-bold text-text-main">{t('an.insights')}</h2>
             </div>
             <InsightsSection insights={insights} />
           </>

@@ -10,19 +10,21 @@ import EmptyState from '../components/ui/EmptyState';
 import { useFoodStore, useFoodActions } from '../store/useFoodStore';
 import { useLocalDate } from '../hooks/useLocalDate';
 import { getDayLabel, getMealTime, formatRupiah } from '../lib/formatters';
-
-const SECTIONS = [
-  { key: 'pagi', label: 'Pagi', emoji: '🌅' },
-  { key: 'siang', label: 'Siang', emoji: '☀️' },
-  { key: 'sore', label: 'Sore', emoji: '🌆' },
-  { key: 'malam', label: 'Malam', emoji: '🌙' },
-];
+import { useT } from '../i18n';
 
 export default function FoodTracker() {
   const entries = useFoodStore((s) => s.entries);
   const { deleteEntry } = useFoodActions();
   const date = useLocalDate();
+  const { t } = useT();
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const SECTIONS = [
+    { key: 'pagi', label: t('food.morning'), emoji: '🌅' },
+    { key: 'siang', label: t('food.noon'), emoji: '☀️' },
+    { key: 'sore', label: t('food.afternoon'), emoji: '🌆' },
+    { key: 'malam', label: t('food.night'), emoji: '🌙' },
+  ];
 
   const dayEntries = useMemo(
     () =>
@@ -46,25 +48,23 @@ export default function FoodTracker() {
 
   return (
     <>
-      <Header title="Food Tracker" subtitle="Catat makan harian" />
+      <Header title={t('food.title')} subtitle={t('food.subtitle')} />
 
       <div className="space-y-4 px-5 pt-1">
         {/* Date nav */}
         <div className="flex items-center justify-between rounded-2xl border border-app-border bg-card px-2 py-2 shadow-soft-sm">
           <button
             type="button"
-            aria-label="Hari sebelumnya"
+            aria-label={t('food.prevDay')}
             onClick={date.prev}
             className="flex h-8 w-8 items-center justify-center rounded-full active:scale-90"
           >
             <ChevronLeft size={18} className="text-text-sub" />
           </button>
-          <span className="text-sm font-semibold text-text-main">
-            {getDayLabel(date.current)}
-          </span>
+          <span className="text-sm font-semibold text-text-main">{getDayLabel(date.current)}</span>
           <button
             type="button"
-            aria-label="Hari berikutnya"
+            aria-label={t('food.nextDay')}
             onClick={date.next}
             disabled={date.isToday}
             className="flex h-8 w-8 items-center justify-center rounded-full active:scale-90 disabled:opacity-30"
@@ -77,15 +77,15 @@ export default function FoodTracker() {
         <div className="grid grid-cols-3 gap-2 rounded-2xl bg-primary p-3 text-center text-white shadow-soft">
           <div>
             <p className="text-lg font-bold">{summary.count}</p>
-            <p className="text-[11px] text-white/70">menu</p>
+            <p className="text-[11px] text-white/70">{t('food.menu')}</p>
           </div>
           <div className="border-x border-white/15">
             <p className="text-lg font-bold">{summary.kcal || '—'}</p>
-            <p className="text-[11px] text-white/70">kkal</p>
+            <p className="text-[11px] text-white/70">{t('food.kcal')}</p>
           </div>
           <div>
             <p className="text-lg font-bold">{summary.cost ? formatRupiah(summary.cost) : '—'}</p>
-            <p className="text-[11px] text-white/70">total</p>
+            <p className="text-[11px] text-white/70">{t('food.total')}</p>
           </div>
         </div>
 
@@ -127,21 +127,17 @@ export default function FoodTracker() {
         ) : (
           <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm">
             <EmptyState
-              title="Belum ada catatan makan"
-              description="Catat apa yang lo makan hari ini."
-              actionLabel="Catat Makan"
+              title={t('food.emptyTitle')}
+              description={t('food.emptyDesc')}
+              actionLabel={t('dash.logMeal')}
               onAction={() => setSheetOpen(true)}
             />
           </div>
         )}
       </div>
 
-      <FAB onClick={() => setSheetOpen(true)} label="Catat makan" />
-      <AddFoodSheet
-        open={sheetOpen}
-        defaultDate={date.dateKey}
-        onClose={() => setSheetOpen(false)}
-      />
+      <FAB onClick={() => setSheetOpen(true)} label={t('food.logMeal')} />
+      <AddFoodSheet open={sheetOpen} defaultDate={date.dateKey} onClose={() => setSheetOpen(false)} />
     </>
   );
 }

@@ -6,9 +6,11 @@ import {
   FOOD_SUGGESTIONS,
   useFoodActions,
 } from '../../store/useFoodStore';
+import { useT } from '../../i18n';
 
 export default function AddFoodSheet({ open, onClose, defaultDate }) {
   const { addEntry } = useFoodActions();
+  const { t, lng } = useT();
   const [name, setName] = useState('');
   const [time, setTime] = useState(format(new Date(), 'HH:mm'));
   const [category, setCategory] = useState('warung');
@@ -31,7 +33,7 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
 
   const handleSave = () => {
     if (!name.trim()) {
-      setError('Nama makanan wajib diisi');
+      setError(t('meal.nameReq'));
       return;
     }
     addEntry({
@@ -47,13 +49,13 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Catat Makan">
+    <BottomSheet open={open} onClose={onClose} title={t('meal.title')}>
       {/* Name + suggestions */}
-      <label className="mb-1 block text-xs font-medium text-text-sub">Nama Makanan</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('meal.name')}</label>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="mis. Ayam geprek"
+        placeholder={t('meal.namePh2')}
         className="mb-2 w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm text-text-main outline-none focus:border-primary"
       />
       <div className="mb-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
@@ -70,7 +72,7 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
       </div>
 
       {/* Time */}
-      <label className="mb-1 block text-xs font-medium text-text-sub">Waktu</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('meal.time')}</label>
       <input
         type="time"
         value={time}
@@ -79,7 +81,7 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
       />
 
       {/* Category */}
-      <label className="mb-2 block text-xs font-medium text-text-sub">Kategori</label>
+      <label className="mb-2 block text-xs font-medium text-text-sub">{t('meal.category')}</label>
       <div className="mb-4 grid grid-cols-2 gap-2">
         {FOOD_CATEGORIES.map((c) => (
           <button
@@ -91,7 +93,7 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
             }`}
           >
             <span className="text-lg">{c.emoji}</span>
-            <span className="text-xs text-text-main">{c.label}</span>
+            <span className="text-xs text-text-main">{lng('foodCategory', c.key)}</span>
           </button>
         ))}
       </div>
@@ -99,37 +101,37 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
       {/* Cost + Calories */}
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-sub">Biaya (Rp)</label>
+          <label className="mb-1 block text-xs font-medium text-text-sub">{t('meal.cost')}</label>
           <input
             inputMode="numeric"
             value={cost ? cost.toLocaleString('id-ID') : ''}
             onChange={(e) =>
               setCost(parseInt(e.target.value.replace(/\D/g, '') || '0', 10))
             }
-            placeholder="opsional"
+            placeholder={t('meal.costPh')}
             className="w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm text-text-main outline-none focus:border-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-sub">Kalori (kkal)</label>
+          <label className="mb-1 block text-xs font-medium text-text-sub">{t('meal.calories')}</label>
           <input
             inputMode="numeric"
             value={calories || ''}
             onChange={(e) =>
               setCalories(parseInt(e.target.value.replace(/\D/g, '') || '0', 10))
             }
-            placeholder="estimasi"
+            placeholder={t('meal.caloriesPh')}
             className="w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm text-text-main outline-none focus:border-primary"
           />
         </div>
       </div>
 
       {/* Note */}
-      <label className="mb-1 block text-xs font-medium text-text-sub">Catatan</label>
+      <label className="mb-1 block text-xs font-medium text-text-sub">{t('meal.note')}</label>
       <input
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="opsional"
+        placeholder={t('meal.notePh')}
         className="mb-4 w-full rounded-xl border border-app-border bg-surface px-3 py-3 text-sm text-text-main outline-none focus:border-primary"
       />
 
@@ -140,7 +142,7 @@ export default function AddFoodSheet({ open, onClose, defaultDate }) {
         onClick={handleSave}
         className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white shadow-soft-sm active:scale-[0.98] transition-transform"
       >
-        Simpan
+        {t('common.save')}
       </button>
     </BottomSheet>
   );
