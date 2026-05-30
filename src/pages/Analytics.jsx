@@ -38,9 +38,9 @@ const ChartSkeleton = () => <div className="skeleton h-56 w-full rounded-xl" />;
 
 const FOOD_COLORS = ['#1B4332', '#40916C', '#52B788', '#95D5B2'];
 
-function Section({ title, subtitle, children }) {
+function Section({ title, subtitle, children, className = '' }) {
   return (
-    <div className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+    <div className={`rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm ${className}`}>
       <div className="mb-3">
         <h2 className="text-sm font-semibold text-text-main">{title}</h2>
         {subtitle && <p className="text-xs text-text-sub">{subtitle}</p>}
@@ -60,7 +60,8 @@ function InsightsSection({ insights }) {
   const { t } = useT();
   const { appreciations, conclusions, recommendations } = insights;
   return (
-    <div className="space-y-4">
+    // Stacked on phones; 3 columns on desktop so text lines stay readable.
+    <div className="space-y-4 lg:grid lg:grid-cols-3 lg:items-start lg:gap-4 lg:space-y-0">
       {appreciations.length > 0 && (
         <Section title={t('an.appreciation')}>
           <div className="space-y-2.5">
@@ -176,8 +177,8 @@ export default function Analytics() {
         transition={{ duration: 0.3 }}
         className="space-y-4 px-5 pt-1"
       >
-        {/* Summary cards */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Summary cards — 2-up on phones, 4-up on desktop */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard
             title={t('an.avgPerDay')}
             value={summary.avgPerDay}
@@ -212,50 +213,54 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Monthly cashflow */}
-        <Section title={t('an.cashflow6')} subtitle={t('an.cashflow6Sub')}>
-          <Suspense fallback={<ChartSkeleton />}>
-            <CashflowChart data={cashflow} />
-          </Suspense>
-        </Section>
-
-        {/* Spending donut */}
-        <Section title={t('an.byCategory')} subtitle={monthLabel}>
-          {hasExpense ? (
+        {/* Charts — single column on phones, 2-up on desktop. The 6-month
+            cashflow timeline spans the full width since it benefits from it. */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Monthly cashflow */}
+          <Section title={t('an.cashflow6')} subtitle={t('an.cashflow6Sub')} className="lg:col-span-2">
             <Suspense fallback={<ChartSkeleton />}>
-              <SpendingDonut
-                data={byCategory}
-                centerLabel={t('an.total')}
-                centerValue={summary.totalExpense}
-              />
+              <CashflowChart data={cashflow} />
             </Suspense>
-          ) : (
-            <EmptyState title={t('an.emptyExpenseTitle')} description={t('an.emptyExpenseDesc')} />
-          )}
-        </Section>
+          </Section>
 
-        {/* Daily spending */}
-        <Section title={t('an.daily')} subtitle={monthLabel}>
-          <Suspense fallback={<ChartSkeleton />}>
-            <DailyBarChart data={daily} />
-          </Suspense>
-        </Section>
+          {/* Spending donut */}
+          <Section title={t('an.byCategory')} subtitle={monthLabel}>
+            {hasExpense ? (
+              <Suspense fallback={<ChartSkeleton />}>
+                <SpendingDonut
+                  data={byCategory}
+                  centerLabel={t('an.total')}
+                  centerValue={summary.totalExpense}
+                />
+              </Suspense>
+            ) : (
+              <EmptyState title={t('an.emptyExpenseTitle')} description={t('an.emptyExpenseDesc')} />
+            )}
+          </Section>
 
-        {/* Food breakdown */}
-        <Section title={t('an.foodHabit')} subtitle={t('an.foodHabitSub')}>
-          {food.length ? (
+          {/* Daily spending */}
+          <Section title={t('an.daily')} subtitle={monthLabel}>
             <Suspense fallback={<ChartSkeleton />}>
-              <SpendingDonut
-                data={food}
-                variant="pie"
-                colors={FOOD_COLORS}
-                valueFormatter={(v) => t('an.menuUnit', { n: v })}
-              />
+              <DailyBarChart data={daily} />
             </Suspense>
-          ) : (
-            <EmptyState title={t('an.emptyFoodTitle')} description={t('an.emptyFoodDesc')} />
-          )}
-        </Section>
+          </Section>
+
+          {/* Food breakdown */}
+          <Section title={t('an.foodHabit')} subtitle={t('an.foodHabitSub')} className="lg:col-span-2">
+            {food.length ? (
+              <Suspense fallback={<ChartSkeleton />}>
+                <SpendingDonut
+                  data={food}
+                  variant="pie"
+                  colors={FOOD_COLORS}
+                  valueFormatter={(v) => t('an.menuUnit', { n: v })}
+                />
+              </Suspense>
+            ) : (
+              <EmptyState title={t('an.emptyFoodTitle')} description={t('an.emptyFoodDesc')} />
+            )}
+          </Section>
+        </div>
 
         {/* Insights: appreciation, conclusion, critical recommendations */}
         {hasData && (

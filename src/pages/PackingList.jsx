@@ -93,7 +93,8 @@ export default function PackingList() {
     <>
       <Header title={t('pack.title')} subtitle={t('pack.subtitle')} />
 
-      <div className="space-y-3 px-5 pt-1">
+      {/* Single column on phones; 2-up trip cards on desktop. */}
+      <div className="grid gap-3 px-5 pt-1 lg:grid-cols-2 lg:items-start">
         {trips.length ? (
           <AnimatePresence initial={false}>
             {trips.map((trip) => {
@@ -147,7 +148,7 @@ export default function PackingList() {
             })}
           </AnimatePresence>
         ) : (
-          <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm">
+          <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm lg:col-span-2">
             <EmptyState
               title={t('pack.emptyTitle')}
               description={t('pack.emptyDesc')}

@@ -85,9 +85,16 @@ export default function Dashboard() {
     <>
       <Header title={fullName || 'Gue Ngekost'} subtitle={`${t(greetingKey())} 👋`} />
 
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-4 px-5 pt-1">
-        {/* Balance card */}
-        <motion.div variants={item} className="rounded-3xl bg-primary p-5 text-white shadow-soft">
+      {/* Mobile: single column (flex+gap). lg+: two-column grid to use the wider
+          canvas. `gap` works identically for both display modes (no margin hacks). */}
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col gap-4 px-5 pt-1 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5"
+      >
+        {/* Balance card — spans both columns on lg */}
+        <motion.div variants={item} className="rounded-3xl bg-primary p-5 text-white shadow-soft lg:col-span-2">
           <p className="text-xs font-medium text-white/70">{formatDate(new Date())}</p>
           <p className="mt-3 text-sm text-white/80">{t('dash.balance')}</p>
           <p className="mt-1 text-3xl font-bold tracking-tight">{formatRupiah(animatedBalance)}</p>
