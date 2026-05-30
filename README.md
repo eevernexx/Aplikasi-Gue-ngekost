@@ -1,58 +1,122 @@
 # Gue Ngekost
 
-Aplikasi pencatatan keuangan & gaya hidup harian buat anak kost. Mobile-first **Progressive Web App (PWA)** yang bisa di-install di HP, dan kini **responsif penuh** dari HP kecil sampai desktop.
+> A personal finance & daily-life tracker built for boarding-house residents in Indonesia.
 
-> 🇬🇧 Default **Bahasa Indonesia**, dengan **toggle English** sekali ketuk, sekalian buat belajar bahasa Inggris. Ganti kapan saja di **Pengaturan** atau di layar pertama (onboarding).
+<p>
+  <img alt="React 18" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black">
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="PWA" src="https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white">
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg">
+</p>
 
-## Fitur
+---
 
-- **Onboarding**: sekali di awal, aplikasi menanyakan nama lengkap kamu (disimpan lokal, tanpa login).
-- **Dashboard**: sapaan dinamis dengan **namamu** (pagi/siang/sore/malam), saldo (bisa disembunyikan), ringkasan bulan ini, aksi cepat, progres budget.
-- **Cashflow**: catat pemasukan/pengeluaran, kelompok per hari, swipe-to-delete.
-- **Food Tracker**: catat makan harian per waktu, kalori & biaya.
-- **Packing List**: checklist barang per trip dengan progress & preset cepat.
-- **Analitik**: grafik cashflow 6 bulan, donut kategori, insight & rekomendasi (bilingual), export PDF.
-- **Pengaturan**: ubah nama, ganti **bahasa (ID/EN)**, tema terang/gelap, reset seluruh data.
-- **Tema**: mode terang/gelap, mengikuti preferensi sistem.
+## Overview
 
-## Responsif & UX
+**Gue Ngekost** is a mobile-first Progressive Web App (PWA) that helps boarding-house residents manage their finances and daily routines — all stored locally in the browser with no account required.
 
-- **HP (termasuk rasio 20:9 / 21:9)**: bottom tab bar, aman dari notch/punch-hole (safe-area atas & bawah), tanpa overflow horizontal (teruji dari 320px).
-- **Tablet & Desktop (16:10 / 16:9)**: bottom bar berubah jadi **sidebar rail** vertikal; konten melebar ke grid 2 kolom yang nyaman & terpusat (bukan sekadar HP yang diperbesar).
-- **Hide saldo**: tombol mata di kartu saldo menyembunyikan/menampilkan saldo & angka masuk/keluar; preferensinya tersimpan.
-- **Keyboard-aware bottom sheet**: saat keyboard muncul, input & tombol simpan tetap terlihat dan bisa di-scroll (pakai `visualViewport`, ukuran `dvh`, dukungan safe-area).
-- **Anti zoom iOS**: input dipaksa 16px di HP agar Safari tidak auto-zoom saat fokus.
-- **FAB** mengikuti kolom aplikasi, bukan menempel ke pinggir layar di tablet/desktop.
+The app ships in **Bahasa Indonesia** by default, with a one-tap toggle to **English**, making it useful as a language-learning tool as well.
 
-## Teknologi
+---
 
-- React 18 + Vite
-- React Router
-- Zustand (state + persist ke localStorage)
-- Tailwind CSS
-- Framer Motion (animasi)
-- Recharts (grafik)
-- vite-plugin-pwa (installable & offline)
+## Features
 
-## Menjalankan
+| Module | Description |
+|---|---|
+| **Dashboard** | Time-aware greeting, balance card (with hide toggle), monthly summary, quick actions, and budget progress |
+| **Cashflow** | Log income and expenses, grouped by day, with swipe-to-delete |
+| **Food Tracker** | Record daily meals per mealtime, track calories and cost |
+| **Packing List** | Trip checklists with per-item progress tracking and quick presets |
+| **Analytics** | 6-month cashflow chart, spending-by-category donut, bilingual insights, and PDF export |
+| **Settings** | Change display name, toggle language (ID / EN), switch dark / light theme, reset all data |
+
+### Responsive Layout
+
+- **Phone (320 px → tall 21:9)** — bottom tab bar, safe-area padding for notch / punch-hole, zero horizontal overflow
+- **Tablet & Desktop** — bottom bar becomes a vertical sidebar rail; content expands to a centered 2-column grid
+
+### PWA & Reliability
+
+- Installable and fully offline-capable via `vite-plugin-pwa`
+- `cleanupOutdatedCaches`, `clientsClaim`, and `skipWaiting` prevent clients from sticking to stale assets after a deploy
+- `lazyWithRetry` reloads a code-split chunk exactly once when it becomes stale, preventing blank screens on the Analytics tab
+
+---
+
+## Tech Stack
+
+| Layer | Library / Tool |
+|---|---|
+| UI framework | React 18 |
+| Build tool | Vite 5 |
+| Routing | React Router DOM 6 |
+| State management | Zustand (persisted to `localStorage`) |
+| Styling | Tailwind CSS 3 |
+| Animation | Framer Motion |
+| Charts | Recharts |
+| PDF export | jsPDF |
+| Date utilities | date-fns |
+| Icons | Lucide React |
+| PWA | vite-plugin-pwa |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18 or later
+- npm (bundled with Node.js)
+
+### Install & Run
 
 ```bash
+# Install dependencies
 npm install
+
+# Start the development server
 npm run dev
+# → http://localhost:5173
 ```
 
-Build production:
+### Production Build
 
 ```bash
-npm run build
-npm run preview
+npm run build    # outputs to dist/
+npm run preview  # preview the production build locally
 ```
 
-## Stabilitas (PWA)
+---
 
-- Service worker memakai `cleanupOutdatedCaches`, `clientsClaim`, `skipWaiting`, dan `navigateFallback` agar klien tidak nyangkut di aset/route lama.
-- `lazyWithRetry` memuat ulang **sekali** jika sebuah code-split chunk usang setelah deploy, mencegah layar kosong (blank screen) di tab Analitik.
+## Project Structure
 
-## Catatan
+```
+gue-ngekost/
+├── src/
+│   ├── components/
+│   │   ├── charts/       # CashflowChart, DailyBarChart, SpendingDonut
+│   │   ├── layout/       # AppShell, Header, Navigation, ErrorFallback
+│   │   └── ui/           # Reusable sheets, cards, FAB, badges
+│   ├── pages/            # Dashboard, Cashflow, FoodTracker, PackingList, Analytics, Settings
+│   ├── store/            # Zustand stores (transactions, food, packing, settings)
+│   ├── i18n/             # Indonesian / English translations
+│   ├── hooks/            # Custom React hooks
+│   └── lib/              # Utilities and helpers
+├── index.html
+├── vite.config.js
+├── tailwind.config.js
+└── package.json
+```
 
-Semua data disimpan lokal di browser (localStorage). Tidak ada backend, tidak ada login.
+---
+
+## Data & Privacy
+
+All data is stored exclusively in the browser's `localStorage`. There is no backend, no network requests for user data, and no authentication — nothing leaves the device.
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
