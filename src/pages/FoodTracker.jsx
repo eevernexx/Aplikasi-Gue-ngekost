@@ -80,11 +80,11 @@ export default function FoodTracker() {
             <p className="text-[11px] text-white/70">{t('food.menu')}</p>
           </div>
           <div className="border-x border-white/15">
-            <p className="text-lg font-bold">{summary.kcal || '—'}</p>
+            <p className="text-lg font-bold">{summary.kcal || '-'}</p>
             <p className="text-[11px] text-white/70">{t('food.kcal')}</p>
           </div>
           <div>
-            <p className="text-lg font-bold">{summary.cost ? formatRupiah(summary.cost) : '—'}</p>
+            <p className="text-lg font-bold">{summary.cost ? formatRupiah(summary.cost) : '-'}</p>
             <p className="text-[11px] text-white/70">{t('food.total')}</p>
           </div>
         </div>

@@ -177,7 +177,7 @@ export default function Analytics() {
         transition={{ duration: 0.3 }}
         className="space-y-4 px-5 pt-1"
       >
-        {/* Summary cards — 2-up on phones, 4-up on desktop */}
+        {/* Summary cards: 2-up on phones, 4-up on desktop */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard
             title={t('an.avgPerDay')}
@@ -213,7 +213,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Charts — single column on phones, 2-up on desktop. The 6-month
+        {/* Charts: single column on phones, 2-up on desktop. The 6-month
             cashflow timeline spans the full width since it benefits from it. */}
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Monthly cashflow */}

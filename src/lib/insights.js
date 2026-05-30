@@ -8,7 +8,7 @@ const pct = (part, whole) => (whole > 0 ? Math.round((part / whole) * 100) : 0);
 /**
  * Turns raw finance + food data into honest, data-driven insights.
  * Bilingual: sentences follow the active UI language (id default / en).
- * Every line cites a real number from the user's own data — no generic filler.
+ * Every line cites a real number from the user's own data,no generic filler.
  */
 export function financialInsights(transactions, entries, monthlyBudget, ref = new Date()) {
   const en = getLang() === 'en';
@@ -40,8 +40,8 @@ export function financialInsights(transactions, entries, monthlyBudget, ref = ne
   if (net > 0) {
     appreciations.push(
       en
-        ? `You're in surplus by ${formatRupiah(net)} this month — spending is still below income. Keep it up.`
-        : `Bulan ini kamu surplus ${formatRupiah(net)} — pengeluaran masih di bawah pemasukan. Pertahankan.`
+        ? `You're in surplus by ${formatRupiah(net)} this month,spending is still below income. Keep it up.`
+        : `Bulan ini kamu surplus ${formatRupiah(net)},pengeluaran masih di bawah pemasukan. Pertahankan.`
     );
   }
   if (monthlyBudget > 0 && expense <= monthlyBudget && expense > 0) {
@@ -54,8 +54,8 @@ export function financialInsights(transactions, entries, monthlyBudget, ref = ne
   if (savingsRate !== null && savingsRate >= 20) {
     appreciations.push(
       en
-        ? `You're saving ${savingsRate}% of income — above the healthy 20% mark. Great.`
-        : `Kamu nyisihin ${savingsRate}% dari pemasukan — di atas standar sehat 20%. Keren.`
+        ? `You're saving ${savingsRate}% of income,above the healthy 20% mark. Great.`
+        : `Kamu nyisihin ${savingsRate}% dari pemasukan,di atas standar sehat 20%. Keren.`
     );
   }
   if (transactions.length >= 10) {
@@ -122,8 +122,8 @@ export function financialInsights(transactions, entries, monthlyBudget, ref = ne
     recommendations.push({
       level: 'danger',
       text: en
-        ? `At ${formatRupiah(Math.round(avgPerDay))}/day, the month-end projection is ${formatRupiah(projected)} — OVER the ${formatRupiah(monthlyBudget)} budget by ${formatRupiah(over)}. Slow down spending now, don't wait until month-end.`
-        : `Dengan laju ${formatRupiah(Math.round(avgPerDay))}/hari, proyeksi akhir bulan ${formatRupiah(projected)} — MELEBIHI budget ${formatRupiah(monthlyBudget)} sebesar ${formatRupiah(over)}. Rem pengeluaran mulai sekarang, jangan tunggu tanggal tua.`,
+        ? `At ${formatRupiah(Math.round(avgPerDay))}/day, the month-end projection is ${formatRupiah(projected)},OVER the ${formatRupiah(monthlyBudget)} budget by ${formatRupiah(over)}. Slow down spending now, don't wait until month-end.`
+        : `Dengan laju ${formatRupiah(Math.round(avgPerDay))}/hari, proyeksi akhir bulan ${formatRupiah(projected)},MELEBIHI budget ${formatRupiah(monthlyBudget)} sebesar ${formatRupiah(over)}. Rem pengeluaran mulai sekarang, jangan tunggu tanggal tua.`,
     });
   }
   if (income > 0 && net < 0) {
@@ -138,24 +138,24 @@ export function financialInsights(transactions, entries, monthlyBudget, ref = ne
     recommendations.push({
       level: 'warning',
       text: en
-        ? `${topName} eats up ${topPct}% of spending — too concentrated. Try cutting it 15–20%; that hits the total hardest.`
-        : `${topName} menyedot ${topPct}% pengeluaran — terlalu terpusat. Coba turunin pos ini 15–20%, dampaknya paling kerasa ke total.`,
+        ? `${topName} eats up ${topPct}% of spending,too concentrated. Try cutting it 15-20%; that hits the total hardest.`
+        : `${topName} menyedot ${topPct}% pengeluaran,terlalu terpusat. Coba turunin pos ini 15-20%, dampaknya paling kerasa ke total.`,
     });
   }
   if (monthFood.length >= 5 && buyCount > cookCount * 2) {
     recommendations.push({
       level: 'warning',
       text: en
-        ? `${buyCount} of ${monthFood.length} meals were bought/delivered, not cooked. A classic budget trap — cooking 2–3x a week already curbs food cost (${formatRupiah(foodSpend)}).`
-        : `${buyCount} dari ${monthFood.length} makanmu beli/ojol, bukan masak. Ini jebakan boros klasik anak kost — masak 2–3x seminggu aja udah lumayan ngerem biaya makan (${formatRupiah(foodSpend)}).`,
+        ? `${buyCount} of ${monthFood.length} meals were bought/delivered, not cooked. A classic budget trap,cooking 2-3x a week already curbs food cost (${formatRupiah(foodSpend)}).`
+        : `${buyCount} dari ${monthFood.length} makanmu beli/ojol, bukan masak. Ini jebakan boros klasik anak kost,masak 2-3x seminggu aja udah lumayan ngerem biaya makan (${formatRupiah(foodSpend)}).`,
     });
   }
   if (savingsRate !== null && savingsRate >= 0 && savingsRate < 10) {
     recommendations.push({
       level: 'warning',
       text: en
-        ? `You're only saving ${savingsRate}% of income. Aim to set aside at least 10–20% at the start of the month, not from leftovers.`
-        : `Kamu cuma nyisihin ${savingsRate}% dari pemasukan. Targetin minimal 10–20% disisihin di awal bulan, bukan dari sisa.`,
+        ? `You're only saving ${savingsRate}% of income. Aim to set aside at least 10-20% at the start of the month, not from leftovers.`
+        : `Kamu cuma nyisihin ${savingsRate}% dari pemasukan. Targetin minimal 10-20% disisihin di awal bulan, bukan dari sisa.`,
     });
   }
   if (expense > 0 && income === 0) {
@@ -178,8 +178,8 @@ export function financialInsights(transactions, entries, monthlyBudget, ref = ne
     recommendations.push({
       level: 'info',
       text: en
-        ? 'Your finances look healthy this month — no red flags. Keep the rhythm and start building an emergency fund.'
-        : 'Keuanganmu bulan ini sehat — nggak ada red flag. Pertahankan ritmenya dan mulai sisihin buat dana darurat.',
+        ? 'Your finances look healthy this month,no red flags. Keep the rhythm and start building an emergency fund.'
+        : 'Keuanganmu bulan ini sehat,nggak ada red flag. Pertahankan ritmenya dan mulai sisihin buat dana darurat.',
     });
   }
 

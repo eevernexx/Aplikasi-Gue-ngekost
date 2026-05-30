@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import {
   ArrowDownCircle,
   ArrowUpCircle,
+  Eye,
+  EyeOff,
   Pencil,
   TrendingDown,
   TrendingUp,
@@ -49,6 +51,10 @@ export default function Dashboard() {
   const monthlyBudget = useFinanceStore((s) => s.monthlyBudget);
   const entries = useFoodStore((s) => s.entries);
   const fullName = useUserStore((s) => s.fullName);
+  const hideBalance = useUserStore((s) => s.hideBalance);
+  const toggleHideBalance = useUserStore((s) => s.toggleHideBalance);
+
+  const MASK = 'Rp ••••••';
 
   const [txSheet, setTxSheet] = useState({ open: false, type: 'expense' });
   const [foodSheet, setFoodSheet] = useState(false);
@@ -85,25 +91,38 @@ export default function Dashboard() {
     <>
       <Header title={fullName || 'Gue Ngekost'} subtitle={`${t(greetingKey())} 👋`} />
 
-      {/* Mobile: single column (flex+gap). lg+: two-column grid to use the wider
-          canvas. `gap` works identically for both display modes (no margin hacks). */}
+      {/* Single column on all sizes for the headline cards; only the two list
+          sections split into two columns on desktop (see the grid wrapper below). */}
       <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="flex flex-col gap-4 px-5 pt-1 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5"
+        className="flex flex-col gap-4 px-5 pt-1"
       >
-        {/* Balance card — spans both columns on lg */}
-        <motion.div variants={item} className="rounded-3xl bg-primary p-5 text-white shadow-soft lg:col-span-2">
+        {/* Balance card */}
+        <motion.div variants={item} className="rounded-3xl bg-primary p-5 text-white shadow-soft">
           <p className="text-xs font-medium text-white/70">{formatDate(new Date())}</p>
-          <p className="mt-3 text-sm text-white/80">{t('dash.balance')}</p>
-          <p className="mt-1 text-3xl font-bold tracking-tight">{formatRupiah(animatedBalance)}</p>
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-sm text-white/80">{t('dash.balance')}</p>
+            <button
+              type="button"
+              onClick={toggleHideBalance}
+              aria-label={hideBalance ? t('dash.showBalance') : t('dash.hideBalance')}
+              aria-pressed={hideBalance}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 active:scale-90"
+            >
+              {hideBalance ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <p className="mt-1 text-3xl font-bold tracking-tight">
+            {hideBalance ? MASK : formatRupiah(animatedBalance)}
+          </p>
           <div className="mt-4 flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1 text-primary-light">
-              <TrendingUp size={14} /> {t('dash.in')} {formatRupiah(income)}
+              <TrendingUp size={14} /> {t('dash.in')} {hideBalance ? MASK : formatRupiah(income)}
             </span>
             <span className="flex items-center gap-1 text-red-300">
-              <TrendingDown size={14} /> {t('dash.out')} {formatRupiah(expense)}
+              <TrendingDown size={14} /> {t('dash.out')} {hideBalance ? MASK : formatRupiah(expense)}
             </span>
           </div>
         </motion.div>
@@ -155,52 +174,58 @@ export default function Dashboard() {
           )}
         </motion.div>
 
-        {/* Recent transactions */}
-        <motion.div variants={item}>
-          <div className="mb-2 flex items-center justify-between px-1">
-            <h2 className="text-sm font-semibold text-text-main">{t('dash.recentTx')}</h2>
+        {/* Lists: stacked on mobile, side by side on desktop */}
+        <motion.div
+          variants={item}
+          className="grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-5"
+        >
+          {/* Recent transactions */}
+          <div>
+            <div className="mb-2 flex items-center justify-between px-1">
+              <h2 className="text-sm font-semibold text-text-main">{t('dash.recentTx')}</h2>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
+              {recent.length ? (
+                recent.map((tx, i) => (
+                  <div key={tx.id} className={i > 0 ? 'border-t border-app-border' : ''}>
+                    <TransactionItem tx={tx} />
+                  </div>
+                ))
+              ) : (
+                <EmptyState title={t('dash.emptyTxTitle')} description={t('dash.emptyTxDesc')} />
+              )}
+            </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
-            {recent.length ? (
-              recent.map((tx, i) => (
-                <div key={tx.id} className={i > 0 ? 'border-t border-app-border' : ''}>
-                  <TransactionItem tx={tx} />
-                </div>
-              ))
-            ) : (
-              <EmptyState title={t('dash.emptyTxTitle')} description={t('dash.emptyTxDesc')} />
-            )}
-          </div>
-        </motion.div>
 
-        {/* Today's food */}
-        <motion.div variants={item}>
-          <div className="mb-2 flex items-center justify-between px-1">
-            <h2 className="text-sm font-semibold text-text-main">{t('dash.todayFood')}</h2>
-            {todayCalories > 0 && (
-              <span className="text-xs text-text-sub">{t('dash.kcalApprox', { n: todayCalories })}</span>
-            )}
-          </div>
-          <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
-            {todayFood.length ? (
-              todayFood.map((e, i) => (
-                <div
-                  key={e.id}
-                  className={`flex items-center gap-3 px-4 py-2.5 ${i > 0 ? 'border-t border-app-border' : ''}`}
-                >
-                  <span className="text-base">🍽️</span>
-                  <span className="flex-1 truncate text-sm text-text-main">{e.name}</span>
-                  <span className="text-xs text-text-sub">{formatTime(e.time)}</span>
-                </div>
-              ))
-            ) : (
-              <EmptyState
-                title={t('dash.emptyFoodTitle')}
-                description={t('dash.emptyFoodDesc')}
-                actionLabel={t('dash.logMeal')}
-                onAction={() => setFoodSheet(true)}
-              />
-            )}
+          {/* Today's food */}
+          <div>
+            <div className="mb-2 flex items-center justify-between px-1">
+              <h2 className="text-sm font-semibold text-text-main">{t('dash.todayFood')}</h2>
+              {todayCalories > 0 && (
+                <span className="text-xs text-text-sub">{t('dash.kcalApprox', { n: todayCalories })}</span>
+              )}
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
+              {todayFood.length ? (
+                todayFood.map((e, i) => (
+                  <div
+                    key={e.id}
+                    className={`flex items-center gap-3 px-4 py-2.5 ${i > 0 ? 'border-t border-app-border' : ''}`}
+                  >
+                    <span className="text-base">🍽️</span>
+                    <span className="flex-1 truncate text-sm text-text-main">{e.name}</span>
+                    <span className="text-xs text-text-sub">{formatTime(e.time)}</span>
+                  </div>
+                ))
+              ) : (
+                <EmptyState
+                  title={t('dash.emptyFoodTitle')}
+                  description={t('dash.emptyFoodDesc')}
+                  actionLabel={t('dash.logMeal')}
+                  onAction={() => setFoodSheet(true)}
+                />
+              )}
+            </div>
           </div>
         </motion.div>
       </motion.div>

@@ -36,7 +36,7 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Sidebar rail — tablets & up */}
+      {/* Sidebar rail: tablets & up */}
       <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-app-border bg-card/60 px-3 py-6 backdrop-blur-md md:flex">
         <div className="flex items-center gap-2 px-3 pb-6">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">
@@ -76,7 +76,7 @@ export default function Navigation() {
         </ul>
       </aside>
 
-      {/* Bottom tab bar — phones only */}
+      {/* Bottom tab bar: phones only */}
       <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-app border-t border-app-border bg-card/95 backdrop-blur-md safe-bottom md:hidden">
         <ul className="flex items-stretch justify-around px-1">
           {TABS.map(({ to, key, icon: Icon }) => {

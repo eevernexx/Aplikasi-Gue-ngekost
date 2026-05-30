@@ -48,6 +48,8 @@ const dict = {
     'greeting.night': 'Selamat Malam',
 
     'dash.balance': 'Saldo Sekarang',
+    'dash.showBalance': 'Tampilkan saldo',
+    'dash.hideBalance': 'Sembunyikan saldo',
     'dash.in': 'Masuk',
     'dash.out': 'Keluar',
     'dash.incomeMonth': 'Pemasukan (bln ini)',
@@ -240,6 +242,8 @@ const dict = {
     'greeting.night': 'Good Night',
 
     'dash.balance': 'Current Balance',
+    'dash.showBalance': 'Show balance',
+    'dash.hideBalance': 'Hide balance',
     'dash.in': 'In',
     'dash.out': 'Out',
     'dash.incomeMonth': 'Income (this month)',
@@ -255,7 +259,7 @@ const dict = {
     'dash.emptyTxTitle': 'No transactions yet',
     'dash.emptyTxDesc': 'Record your first income or expense.',
     'dash.emptyFoodTitle': 'Nothing eaten yet',
-    'dash.emptyFoodDesc': 'Don’t forget to eat — log it here.',
+    'dash.emptyFoodDesc': 'Don’t forget to eat, log it here.',
     'dash.logMeal': 'Log Meal',
 
     'cf.subtitle': 'Income & expenses',

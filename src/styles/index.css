@@ -18,7 +18,7 @@
   --color-border: 229 231 235;
 }
 
-/* Dark theme — applied by toggling the `dark` class on <html>. */
+/* Dark theme: applied by toggling the `dark` class on <html>. */
 .dark {
   --color-primary: 45 106 79;
   --color-primary-mid: 64 145 108;

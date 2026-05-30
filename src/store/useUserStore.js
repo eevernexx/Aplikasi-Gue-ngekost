@@ -10,16 +10,18 @@ const DATA_KEYS = [
 
 /**
  * User profile + first-run onboarding state.
- * No backend, no login — localStorage via zustand persist.
+ * No backend, no login. Stored in localStorage via zustand persist.
  */
 export const useUserStore = create(
   persist(
     (set) => ({
       fullName: '',
       onboarded: false,
+      hideBalance: false,
       setFullName: (fullName) => set({ fullName: fullName.trim() }),
       completeOnboarding: (fullName) =>
         set({ fullName: fullName.trim(), onboarded: true }),
+      toggleHideBalance: () => set((s) => ({ hideBalance: !s.hideBalance })),
       /** Wipe all financial/food/packing data (keeps profile + preferences). */
       resetData: () => {
         DATA_KEYS.forEach((k) => localStorage.removeItem(k));
