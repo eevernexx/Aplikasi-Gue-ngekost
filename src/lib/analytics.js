@@ -223,6 +223,63 @@ export function rangeSummary(transactions, entries, start, end, ref = new Date()
   };
 }
 
+/** Income breakdown by category within an interval, sorted desc. */
+export function incomeByCategoryRange(transactions, start, end) {
+  const map = new Map();
+  for (const t of transactions) {
+    if (t.type === 'income' && isWithinInterval(d(t.date), { start, end })) {
+      map.set(t.category, (map.get(t.category) || 0) + t.amount);
+    }
+  }
+  const en = getLang() === 'en';
+  return [...map.entries()]
+    .map(([name, value]) => ({
+      name: en ? label('txCategory', name) : name,
+      raw: name,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value);
+}
+
+/** Day-by-day income/expense/net for an interval — only days with activity. */
+export function dailyBreakdownRange(transactions, start, end) {
+  const byDay = new Map();
+  for (const t of transactions) {
+    if (isWithinInterval(d(t.date), { start, end })) {
+      const key = format(d(t.date), 'yyyy-MM-dd');
+      const prev = byDay.get(key) || { income: 0, expense: 0 };
+      if (t.type === 'income') prev.income += t.amount;
+      else prev.expense += t.amount;
+      byDay.set(key, prev);
+    }
+  }
+  return [...byDay.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, { income, expense }]) => ({
+      label: format(parseISO(key), 'd MMM yyyy', { locale: dfLocale() }),
+      income,
+      expense,
+      net: income - expense,
+    }));
+}
+
+/** All transactions within an interval sorted by date desc. */
+export function transactionsInRange(transactions, start, end) {
+  return transactions
+    .filter((t) => isWithinInterval(d(t.date), { start, end }))
+    .sort((a, b) => d(b.date) - d(a.date));
+}
+
+/** Food entries within an interval sorted by date+time asc. */
+export function foodEntriesInRange(entries, start, end) {
+  return entries
+    .filter((e) => isWithinInterval(parseISO(`${e.date}T00:00:00`), { start, end }))
+    .sort((a, b) => {
+      const cmp = a.date.localeCompare(b.date);
+      return cmp !== 0 ? cmp : (a.time || '').localeCompare(b.time || '');
+    });
+}
+
 /** Per-month income/expense/net rows covering the interval (oldest -> newest). */
 export function monthlyBreakdown(transactions, start, end) {
   const out = [];

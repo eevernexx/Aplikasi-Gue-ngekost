@@ -120,7 +120,18 @@ export default function Analytics() {
   const entries = useFoodStore((s) => s.entries);
 
   const [downloading, setDownloading] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [rangeError, setRangeError] = useState('');
+
+  const todayStr = () => new Date().toISOString().split('T')[0];
+  const monthStartStr = () => {
+    const d = new Date();
+    d.setDate(1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const [startDate, setStartDate] = useState(monthStartStr);
+  const [endDate, setEndDate] = useState(todayStr);
 
   const cashflow = useMemo(() => lastMonthsCashflow(transactions, 6), [transactions]);
   const byCategory = useMemo(() => spendingByCategory(transactions), [transactions]);
@@ -139,12 +150,32 @@ export default function Analytics() {
   const hasExpense = byCategory.length > 0;
   const hasData = transactions.length > 0 || entries.length > 0;
 
-  const handleDownload = async (period) => {
-    setMenuOpen(false);
+  const applyQuick = (days) => {
+    const end = new Date();
+    const start = new Date();
+    if (days === 'month') {
+      start.setDate(1);
+    } else {
+      start.setDate(end.getDate() - (days - 1));
+    }
+    setStartDate(start.toISOString().split('T')[0]);
+    setEndDate(end.toISOString().split('T')[0]);
+    setRangeError('');
+  };
+
+  const handleDownload = async () => {
+    if (!startDate || !endDate) { setRangeError(t('an.fillBothDates')); return; }
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    if (e < s) { setRangeError(t('an.endBeforeStart')); return; }
+    const diff = Math.round((e - s) / 86400000) + 1;
+    if (diff > 30) { setRangeError(t('an.maxDaysError')); return; }
+    setRangeError('');
+    setPickerOpen(false);
     if (downloading) return;
     setDownloading(true);
     try {
-      await exportAnalyticsPdf({ transactions, entries, monthlyBudget, period });
+      await exportAnalyticsPdf({ transactions, entries, monthlyBudget, startDate, endDate });
     } catch (err) {
       console.error('PDF export failed:', err);
       alert(t('an.pdfError'));
@@ -153,67 +184,98 @@ export default function Analytics() {
     }
   };
 
-  const periods = [
-    { key: 'month', label: t('an.periodMonth') },
-    { key: '6months', label: t('an.period6') },
-    { key: 'year', label: t('an.periodYear') },
-  ];
-
   const downloadButton = hasData ? (
     <div className="relative">
       <button
         type="button"
-        onClick={() => setMenuOpen((o) => !o)}
+        onClick={() => { setPickerOpen((o) => !o); setRangeError(''); }}
         disabled={downloading}
         aria-label={t('an.pdfAria')}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
+        aria-haspopup="dialog"
+        aria-expanded={pickerOpen}
         className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-semibold text-white shadow-soft-sm active:scale-95 transition-transform disabled:opacity-60"
       >
-        {downloading ? (
-          <Loader2 size={15} className="animate-spin" />
-        ) : (
-          <Download size={15} />
-        )}
+        {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
         {downloading ? t('an.generating') : t('an.pdf')}
         {!downloading && (
-          <ChevronDown
-            size={14}
-            className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`}
-          />
+          <ChevronDown size={14} className={`transition-transform ${pickerOpen ? 'rotate-180' : ''}`} />
         )}
       </button>
 
-      {menuOpen && !downloading && (
+      {pickerOpen && !downloading && (
         <>
-          {/* Click-away overlay */}
           <button
             type="button"
             aria-hidden="true"
             tabIndex={-1}
-            onClick={() => setMenuOpen(false)}
+            onClick={() => setPickerOpen(false)}
             className="fixed inset-0 z-40 cursor-default"
           />
           <div
-            role="menu"
+            role="dialog"
             aria-label={t('an.periodTitle')}
-            className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-app-border bg-card p-1 shadow-soft"
+            className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-2xl border border-app-border bg-card p-4 shadow-soft"
           >
-            <p className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-text-sub">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-text-sub">
               {t('an.periodTitle')}
             </p>
-            {periods.map((p) => (
-              <button
-                key={p.key}
-                type="button"
-                role="menuitem"
-                onClick={() => handleDownload(p.key)}
-                className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-medium text-text-main transition-colors hover:bg-accent/60 active:scale-[0.98]"
-              >
-                {p.label}
-                <Download size={14} className="text-text-sub" />
-              </button>
-            ))}
+
+            {/* Quick shortcuts */}
+            <div className="mb-3 flex gap-1.5 flex-wrap">
+              {[
+                { label: t('an.quick7'), days: 7 },
+                { label: t('an.quick14'), days: 14 },
+                { label: t('an.quickMonth'), days: 'month' },
+                { label: t('an.quick30'), days: 30 },
+              ].map(({ label: lbl, days }) => (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => applyQuick(days)}
+                  className="rounded-full border border-app-border bg-surface px-2.5 py-1 text-[11px] font-medium text-text-sub transition-colors hover:border-primary hover:text-primary active:scale-95"
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+
+            {/* Date inputs */}
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-text-sub">{t('an.from')}</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  max={endDate || todayStr()}
+                  onChange={(e) => { setStartDate(e.target.value); setRangeError(''); }}
+                  className="w-full rounded-xl border border-app-border bg-surface px-2.5 py-2 text-xs text-text-main outline-none focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-text-sub">{t('an.to')}</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  max={todayStr()}
+                  onChange={(e) => { setEndDate(e.target.value); setRangeError(''); }}
+                  className="w-full rounded-xl border border-app-border bg-surface px-2.5 py-2 text-xs text-text-main outline-none focus:border-primary"
+                />
+              </div>
+            </div>
+
+            {rangeError && (
+              <p className="mb-2 text-[11px] font-medium text-danger">{rangeError}</p>
+            )}
+
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-xs font-semibold text-white shadow-soft-sm active:scale-[0.98] transition-transform"
+            >
+              <Download size={14} />
+              {t('an.download')}
+            </button>
           </div>
         </>
       )}
