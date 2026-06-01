@@ -43,7 +43,7 @@ The app ships in **Bahasa Indonesia** by default with a one-tap switch to **Engl
 | **Cashflow** | Log income and expenses, grouped by day, with swipe-to-delete and per-month navigation. |
 | **Food Tracker** | Record daily meals by mealtime; track calories and cost at a glance. |
 | **Packing List** | Trip checklists with per-item progress tracking and quick presets. |
-| **Analytics** | 6-month cashflow chart, spending-by-category donut, bilingual insights, and one-tap PDF export. |
+| **Analytics** | 6-month cashflow chart, spending-by-category donut, bilingual insights, and a PDF report exportable per month, per 6 months, or per year. |
 | **Settings** | Display name, language (ID / EN), dark / light theme, monthly budget, and full data reset. |
 
 ### Responsive Layout

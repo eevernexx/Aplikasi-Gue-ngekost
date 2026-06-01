@@ -1,14 +1,16 @@
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import {
-  monthTotals,
-  spendingByCategory,
-  foodBreakdown,
-  analyticsSummary,
+  periodRange,
+  rangeTotals,
+  spendingByCategoryRange,
+  foodBreakdownRange,
+  rangeSummary,
+  monthlyBreakdown,
   totalBalance,
 } from './analytics';
 import { formatRupiah } from './formatters';
-import { financialInsights } from './insights';
+import { financialInsights, periodInsights } from './insights';
 
 const GREEN = [27, 67, 50];
 const MID = [64, 145, 108];
@@ -21,13 +23,17 @@ const LEVEL_COLOR = { danger: DANGER, warning: WARNING, info: MID };
 const LEVEL_TAG = { danger: 'PENTING', warning: 'PERHATIAN', info: 'INFO' };
 
 /**
- * Builds and downloads a one-or-more page PDF report of the current month's
- * analytics. jsPDF is imported dynamically so it stays out of the initial bundle.
+ * Builds and downloads a one-or-more page PDF analytics report for the chosen
+ * `period`: 'month' (current month), '6months', or 'year' (trailing 6/12 months).
+ * Multi-month reports add a per-month breakdown table and use aggregate,
+ * period-aware insights. jsPDF is imported dynamically so it stays out of the
+ * initial bundle.
  */
 export async function exportAnalyticsPdf({
   transactions,
   entries,
   monthlyBudget,
+  period = 'month',
   ref = new Date(),
 }) {
   const { jsPDF } = await import('jspdf');
@@ -39,13 +45,29 @@ export async function exportAnalyticsPdf({
   const contentW = pageW - margin * 2;
   let y = margin;
 
-  const monthLabel = format(ref, 'MMMM yyyy', { locale: id });
-  const { income, expense, net } = monthTotals(transactions, ref);
-  const summary = analyticsSummary(transactions, entries, ref);
-  const byCat = spendingByCategory(transactions, ref);
-  const food = foodBreakdown(entries, ref);
+  const { start, end, months } = periodRange(period, ref);
+  const single = months === 1;
+
+  // "Juni 2026" for a single month, "Jan 2026 - Jun 2026" across a range.
+  const periodLabel = single
+    ? format(end, 'MMMM yyyy', { locale: id })
+    : `${format(start, 'MMM yyyy', { locale: id })} - ${format(end, 'MMM yyyy', { locale: id })}`;
+  const periodNoun = single
+    ? 'Bulan ini'
+    : months === 6
+      ? '6 bulan terakhir'
+      : '1 tahun terakhir';
+
+  const { income, expense, net } = rangeTotals(transactions, start, end);
+  const summary = rangeSummary(transactions, entries, start, end, ref);
+  const byCat = spendingByCategoryRange(transactions, start, end);
+  const food = foodBreakdownRange(entries, start, end);
   const balance = totalBalance(transactions);
-  const insights = financialInsights(transactions, entries, monthlyBudget, ref);
+  const breakdown = single ? [] : monthlyBreakdown(transactions, start, end);
+  const budgetForPeriod = monthlyBudget > 0 ? monthlyBudget * months : 0;
+  const insights = single
+    ? financialInsights(transactions, entries, monthlyBudget, ref)
+    : periodInsights(transactions, entries, monthlyBudget, { start, end, months });
 
   const ensure = (h) => {
     if (y + h > pageH - margin) {
@@ -116,6 +138,24 @@ export async function exportAnalyticsPdf({
     y += 6;
   };
 
+  // Four-column row for the per-month breakdown table (month + 3 figures).
+  const tableCols = [
+    { x: margin, align: 'left' },
+    { x: margin + contentW * 0.52, align: 'right' },
+    { x: margin + contentW * 0.76, align: 'right' },
+    { x: margin + contentW, align: 'right' },
+  ];
+  const tableRow = (cells, { bold = false, colors = [] } = {}) => {
+    ensure(6);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setFontSize(9);
+    cells.forEach((text, i) => {
+      doc.setTextColor(...(colors[i] || TEXT));
+      doc.text(String(text), tableCols[i].x, y, { align: tableCols[i].align });
+    });
+    y += 5.5;
+  };
+
   // ---------------------------------------------------------------- HEADER
   doc.setFillColor(...GREEN);
   doc.rect(0, 0, pageW, 26, 'F');
@@ -127,7 +167,7 @@ export async function exportAnalyticsPdf({
   doc.setFontSize(10);
   doc.setTextColor(216, 243, 220);
   doc.text(
-    `Periode ${monthLabel}  •  Dibuat ${format(new Date(), 'd MMM yyyy, HH:mm', {
+    `${periodNoun}: ${periodLabel}  •  Dibuat ${format(new Date(), 'd MMM yyyy, HH:mm', {
       locale: id,
     })}`,
     margin,
@@ -138,17 +178,39 @@ export async function exportAnalyticsPdf({
   // --------------------------------------------------------------- RINGKASAN
   sectionHeading('Ringkasan Keuangan');
   kv('Saldo total (lifetime)', formatRupiah(balance), balance >= 0 ? GREEN : DANGER);
-  kv('Pemasukan bulan ini', formatRupiah(income), GREEN);
-  kv('Pengeluaran bulan ini', formatRupiah(expense), DANGER);
+  kv(single ? 'Pemasukan bulan ini' : 'Total pemasukan', formatRupiah(income), GREEN);
+  kv(single ? 'Pengeluaran bulan ini' : 'Total pengeluaran', formatRupiah(expense), DANGER);
   kv('Arus kas bersih', formatRupiah(net), net >= 0 ? GREEN : DANGER);
   kv('Rata-rata pengeluaran/hari', formatRupiah(Math.round(summary.avgPerDay)));
+  if (!single) {
+    kv('Rata-rata pengeluaran/bulan', formatRupiah(Math.round(expense / months)));
+  }
   if (monthlyBudget > 0) {
-    const remain = monthlyBudget - expense;
-    kv('Budget bulanan', formatRupiah(monthlyBudget));
+    const remain = budgetForPeriod - expense;
+    kv(
+      single ? 'Budget bulanan' : `Budget ${months} bulan`,
+      formatRupiah(budgetForPeriod)
+    );
     kv(
       remain >= 0 ? 'Sisa budget' : 'Lewat budget',
       formatRupiah(Math.abs(remain)),
       remain >= 0 ? GREEN : DANGER
+    );
+  }
+
+  // ------------------------------------------------------- RINCIAN PER BULAN
+  if (breakdown.length) {
+    sectionHeading('Rincian per Bulan');
+    tableRow(['Bulan', 'Masuk', 'Keluar', 'Bersih'], { bold: true, colors: [SUB, SUB, SUB, SUB] });
+    breakdown.forEach((m) => {
+      tableRow(
+        [m.label, formatRupiah(m.income), formatRupiah(m.expense), formatRupiah(m.net)],
+        { colors: [TEXT, GREEN, DANGER, m.net >= 0 ? GREEN : DANGER] }
+      );
+    });
+    tableRow(
+      ['Total', formatRupiah(income), formatRupiah(expense), formatRupiah(net)],
+      { bold: true, colors: [TEXT, GREEN, DANGER, net >= 0 ? GREEN : DANGER] }
     );
   }
 
@@ -202,6 +264,7 @@ export async function exportAnalyticsPdf({
     doc.text(`Hal. ${i}/${pages}`, margin + contentW, pageH - 8, { align: 'right' });
   }
 
-  const fileName = `gue-ngekost-analitik-${format(ref, 'yyyy-MM')}.pdf`;
+  const fileTag = single ? format(end, 'yyyy-MM') : `${months}bulan-${format(end, 'yyyy-MM')}`;
+  const fileName = `gue-ngekost-analitik-${fileTag}.pdf`;
   doc.save(fileName);
 }

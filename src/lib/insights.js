@@ -1,5 +1,12 @@
-import { getDaysInMonth, isSameMonth, parseISO } from 'date-fns';
-import { monthTotals, spendingByCategory, analyticsSummary } from './analytics';
+import { getDaysInMonth, isSameMonth, isWithinInterval, parseISO } from 'date-fns';
+import {
+  monthTotals,
+  spendingByCategory,
+  analyticsSummary,
+  rangeTotals,
+  rangeSummary,
+  spendingByCategoryRange,
+} from './analytics';
 import { formatRupiah } from './formatters';
 import { getLang } from '../i18n';
 
@@ -180,6 +187,180 @@ export function financialInsights(transactions, entries, monthlyBudget, ref = ne
       text: en
         ? 'Your finances look healthy this month,no red flags. Keep the rhythm and start building an emergency fund.'
         : 'Keuanganmu bulan ini sehat,nggak ada red flag. Pertahankan ritmenya dan mulai sisihin buat dana darurat.',
+    });
+  }
+
+  return { appreciations, conclusions, recommendations };
+}
+
+/**
+ * Aggregate, period-aware insights for multi-month reports (6 months / 1 year).
+ * Wording is neutral about time ("dalam X bulan ini" / "over these X months")
+ * and the budget is compared against the period (monthlyBudget * months),
+ * since a single month-end projection makes no sense across a long span.
+ */
+export function periodInsights(transactions, entries, monthlyBudget, range) {
+  const { start, end, months } = range;
+  const en = getLang() === 'en';
+  const periodWord = en ? `over these ${months} months` : `dalam ${months} bulan ini`;
+  const perMonth = en ? '/month' : '/bulan';
+
+  const { income, expense, net } = rangeTotals(transactions, start, end);
+  const summary = rangeSummary(transactions, entries, start, end);
+  const byCat = spendingByCategoryRange(transactions, start, end);
+  const avgPerDay = summary.avgPerDay;
+  const avgExpensePerMonth = Math.round(expense / months);
+  const avgIncomePerMonth = Math.round(income / months);
+
+  const topCat = byCat[0];
+  const topName = topCat?.name;
+  const topPct = topCat ? pct(topCat.value, expense) : 0;
+  const savingsRate = income > 0 ? pct(net, income) : null;
+
+  const periodFood = entries.filter((e) =>
+    isWithinInterval(parseISO(`${e.date}T00:00:00`), { start, end })
+  );
+  const foodSpend = periodFood.reduce((s, e) => s + (e.cost || 0), 0);
+  const cookCount = periodFood.filter((e) => e.category === 'masak').length;
+  const buyCount = periodFood.length - cookCount;
+
+  const txCount = transactions.filter((t) => isWithinInterval(parseISO(t.date), { start, end })).length;
+  const budgetForPeriod = monthlyBudget > 0 ? monthlyBudget * months : 0;
+
+  const appreciations = [];
+  const conclusions = [];
+  const recommendations = [];
+  const hasData = txCount > 0;
+
+  // ----------------------------------------------------------- APPRECIATION
+  if (net > 0) {
+    appreciations.push(
+      en
+        ? `You're in surplus by ${formatRupiah(net)} ${periodWord}, spending stayed below income. Keep it up.`
+        : `${periodWord[0].toUpperCase()}${periodWord.slice(1)} kamu surplus ${formatRupiah(net)}, pengeluaran tetap di bawah pemasukan. Pertahankan.`
+    );
+  }
+  if (budgetForPeriod > 0 && expense <= budgetForPeriod && expense > 0) {
+    appreciations.push(
+      en
+        ? `Spending averaged ${formatRupiah(avgExpensePerMonth)}${perMonth}, within the ${formatRupiah(monthlyBudget)}${perMonth} budget. Nice discipline.`
+        : `Pengeluaran rata-rata ${formatRupiah(avgExpensePerMonth)}${perMonth}, masih di dalam budget ${formatRupiah(monthlyBudget)}${perMonth}. Disiplinmu kelihatan.`
+    );
+  }
+  if (savingsRate !== null && savingsRate >= 20) {
+    appreciations.push(
+      en
+        ? `You saved ${savingsRate}% of income ${periodWord}, above the healthy 20% mark. Great.`
+        : `Kamu nyisihin ${savingsRate}% dari pemasukan ${periodWord}, di atas standar sehat 20%. Keren.`
+    );
+  }
+  if (cookCount > 0 && cookCount >= buyCount && periodFood.length > 0) {
+    appreciations.push(
+      en
+        ? `Of ${periodFood.length} meals logged, ${cookCount} were home-cooked. Cheap and healthy.`
+        : `Dari ${periodFood.length} catatan makan, ${cookCount} di antaranya masak sendiri. Hemat dan sehat.`
+    );
+  }
+
+  // ------------------------------------------------------------- CONCLUSION
+  if (hasData) {
+    conclusions.push(
+      en
+        ? `Total spending ${periodWord} is ${formatRupiah(expense)}, averaging ${formatRupiah(avgExpensePerMonth)}${perMonth} (${formatRupiah(Math.round(avgPerDay))}/day).`
+        : `Total pengeluaran ${periodWord} ${formatRupiah(expense)}, rata-rata ${formatRupiah(avgExpensePerMonth)}${perMonth} (${formatRupiah(Math.round(avgPerDay))}/hari).`
+    );
+    if (income > 0) {
+      conclusions.push(
+        en
+          ? `Income totals ${formatRupiah(income)} (${formatRupiah(avgIncomePerMonth)}${perMonth}), so net cash flow is ${net >= 0 ? 'positive' : 'negative'} ${formatRupiah(Math.abs(net))}.`
+          : `Pemasukan total ${formatRupiah(income)} (${formatRupiah(avgIncomePerMonth)}${perMonth}), sehingga arus kas bersih ${net >= 0 ? 'positif' : 'negatif'} ${formatRupiah(Math.abs(net))}.`
+      );
+    }
+    if (topCat) {
+      conclusions.push(
+        en
+          ? `Biggest category: ${topName} (${formatRupiah(topCat.value)}, ${topPct}% of total).`
+          : `Pos terbesar: ${topName} (${formatRupiah(topCat.value)}, ${topPct}% dari total).`
+      );
+    }
+    if (summary.worstDayAmount > 0) {
+      conclusions.push(
+        en
+          ? `Most expensive single day: ${summary.worstDay} with ${formatRupiah(summary.worstDayAmount)}.`
+          : `Hari paling boros: ${summary.worstDay} dengan ${formatRupiah(summary.worstDayAmount)}.`
+      );
+    }
+    if (periodFood.length > 0) {
+      conclusions.push(
+        en
+          ? `${periodFood.length} meals logged, total food cost ${formatRupiah(foodSpend)}.`
+          : `Tercatat ${periodFood.length} kali makan, total biaya makan ${formatRupiah(foodSpend)}.`
+      );
+    }
+  } else {
+    conclusions.push(
+      en
+        ? 'No transactions in this period yet. Start logging income & expenses so this report has something to work with.'
+        : 'Belum ada transaksi di periode ini. Mulai catat pemasukan & pengeluaran biar laporan ini berisi.'
+    );
+  }
+
+  // ---------------------------------------------------------- RECOMMENDATION
+  if (budgetForPeriod > 0 && expense > budgetForPeriod && expense > 0) {
+    const over = expense - budgetForPeriod;
+    recommendations.push({
+      level: 'danger',
+      text: en
+        ? `Spending of ${formatRupiah(expense)} is OVER the ${formatRupiah(budgetForPeriod)} budget for this period by ${formatRupiah(over)} (avg ${formatRupiah(avgExpensePerMonth)}${perMonth} vs ${formatRupiah(monthlyBudget)}${perMonth}). Tighten the biggest categories.`
+        : `Pengeluaran ${formatRupiah(expense)} MELEBIHI budget ${formatRupiah(budgetForPeriod)} untuk periode ini sebesar ${formatRupiah(over)} (rata-rata ${formatRupiah(avgExpensePerMonth)}${perMonth} vs ${formatRupiah(monthlyBudget)}${perMonth}). Rem pos terbesar.`,
+    });
+  }
+  if (income > 0 && net < 0) {
+    recommendations.push({
+      level: 'danger',
+      text: en
+        ? `You're in a ${formatRupiah(Math.abs(net))} deficit ${periodWord}. If this keeps up, savings will erode. Cut the biggest category or add income.`
+        : `Kamu defisit ${formatRupiah(Math.abs(net))} ${periodWord}. Kalau pola ini jalan terus, saldo bakal kegerus. Pangkas pos terbesar atau tambah pemasukan.`,
+    });
+  }
+  if (topCat && topPct >= 40) {
+    recommendations.push({
+      level: 'warning',
+      text: en
+        ? `${topName} eats up ${topPct}% of spending, too concentrated. Trimming it 15-20% hits the total hardest.`
+        : `${topName} menyedot ${topPct}% pengeluaran, terlalu terpusat. Turunin pos ini 15-20%, dampaknya paling kerasa ke total.`,
+    });
+  }
+  if (periodFood.length >= 5 && buyCount > cookCount * 2) {
+    recommendations.push({
+      level: 'warning',
+      text: en
+        ? `${buyCount} of ${periodFood.length} meals were bought/delivered, not cooked. Cooking 2-3x a week curbs food cost (${formatRupiah(foodSpend)} so far).`
+        : `${buyCount} dari ${periodFood.length} makanmu beli/ojol, bukan masak. Masak 2-3x seminggu aja udah lumayan ngerem biaya makan (${formatRupiah(foodSpend)}).`,
+    });
+  }
+  if (savingsRate !== null && savingsRate >= 0 && savingsRate < 10) {
+    recommendations.push({
+      level: 'warning',
+      text: en
+        ? `You only saved ${savingsRate}% of income across this period. Aim for at least 10-20%, set aside at the start of each month.`
+        : `Kamu cuma nyisihin ${savingsRate}% dari pemasukan sepanjang periode ini. Targetin minimal 10-20%, disisihin di awal tiap bulan.`,
+    });
+  }
+  if (!monthlyBudget || monthlyBudget <= 0) {
+    recommendations.push({
+      level: 'info',
+      text: en
+        ? 'No monthly budget set yet. Set a limit on the dashboard so the app can warn you before you overspend.'
+        : 'Belum set budget bulanan. Tetapin batas di dashboard biar app bisa ngingetin sebelum kebablasan.',
+    });
+  }
+  if (recommendations.length === 0 && hasData) {
+    recommendations.push({
+      level: 'info',
+      text: en
+        ? 'Your finances look healthy across this period, no red flags. Keep the rhythm and keep building your emergency fund.'
+        : 'Keuanganmu sehat sepanjang periode ini, nggak ada red flag. Pertahankan ritmenya dan terus isi dana darurat.',
     });
   }
 

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import {
   AlertTriangle,
   CalendarClock,
+  ChevronDown,
   ClipboardList,
   Download,
   Flame,
@@ -119,6 +120,7 @@ export default function Analytics() {
   const entries = useFoodStore((s) => s.entries);
 
   const [downloading, setDownloading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const cashflow = useMemo(() => lastMonthsCashflow(transactions, 6), [transactions]);
   const byCategory = useMemo(() => spendingByCategory(transactions), [transactions]);
@@ -137,11 +139,12 @@ export default function Analytics() {
   const hasExpense = byCategory.length > 0;
   const hasData = transactions.length > 0 || entries.length > 0;
 
-  const handleDownload = async () => {
+  const handleDownload = async (period) => {
+    setMenuOpen(false);
     if (downloading) return;
     setDownloading(true);
     try {
-      await exportAnalyticsPdf({ transactions, entries, monthlyBudget });
+      await exportAnalyticsPdf({ transactions, entries, monthlyBudget, period });
     } catch (err) {
       console.error('PDF export failed:', err);
       alert(t('an.pdfError'));
@@ -150,21 +153,71 @@ export default function Analytics() {
     }
   };
 
+  const periods = [
+    { key: 'month', label: t('an.periodMonth') },
+    { key: '6months', label: t('an.period6') },
+    { key: 'year', label: t('an.periodYear') },
+  ];
+
   const downloadButton = hasData ? (
-    <button
-      type="button"
-      onClick={handleDownload}
-      disabled={downloading}
-      aria-label={t('an.pdfAria')}
-      className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-semibold text-white shadow-soft-sm active:scale-95 transition-transform disabled:opacity-60"
-    >
-      {downloading ? (
-        <Loader2 size={15} className="animate-spin" />
-      ) : (
-        <Download size={15} />
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setMenuOpen((o) => !o)}
+        disabled={downloading}
+        aria-label={t('an.pdfAria')}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-semibold text-white shadow-soft-sm active:scale-95 transition-transform disabled:opacity-60"
+      >
+        {downloading ? (
+          <Loader2 size={15} className="animate-spin" />
+        ) : (
+          <Download size={15} />
+        )}
+        {downloading ? t('an.generating') : t('an.pdf')}
+        {!downloading && (
+          <ChevronDown
+            size={14}
+            className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+          />
+        )}
+      </button>
+
+      {menuOpen && !downloading && (
+        <>
+          {/* Click-away overlay */}
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setMenuOpen(false)}
+            className="fixed inset-0 z-40 cursor-default"
+          />
+          <div
+            role="menu"
+            aria-label={t('an.periodTitle')}
+            className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-app-border bg-card p-1 shadow-soft"
+          >
+            <p className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-text-sub">
+              {t('an.periodTitle')}
+            </p>
+            {periods.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                role="menuitem"
+                onClick={() => handleDownload(p.key)}
+                className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-medium text-text-main transition-colors hover:bg-accent/60 active:scale-[0.98]"
+              >
+                {p.label}
+                <Download size={14} className="text-text-sub" />
+              </button>
+            ))}
+          </div>
+        </>
       )}
-      {downloading ? t('an.generating') : t('an.pdf')}
-    </button>
+    </div>
   ) : null;
 
   return (
