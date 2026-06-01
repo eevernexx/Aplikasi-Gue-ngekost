@@ -214,7 +214,7 @@ export default function Analytics() {
           <div
             role="dialog"
             aria-label={t('an.periodTitle')}
-            className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-2xl border border-app-border bg-card p-4 shadow-soft"
+            className="absolute -right-24 z-50 mt-2 w-72 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-app-border bg-card p-4 shadow-soft"
           >
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-text-sub">
               {t('an.periodTitle')}
