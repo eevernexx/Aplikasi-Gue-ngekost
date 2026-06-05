@@ -220,8 +220,9 @@ export default function Analytics() {
               {t('an.periodTitle')}
             </p>
 
-            {/* Quick shortcuts */}
-            <div className="mb-3 flex gap-1.5 flex-wrap">
+            {/* Quick shortcuts: fixed 2×2 grid so the chips stay aligned and
+                never wrap unevenly inside the narrow popover. */}
+            <div className="mb-3 grid grid-cols-2 gap-1.5">
               {[
                 { label: t('an.quick7'), days: 7 },
                 { label: t('an.quick14'), days: 14 },
@@ -232,15 +233,16 @@ export default function Analytics() {
                   key={days}
                   type="button"
                   onClick={() => applyQuick(days)}
-                  className="rounded-full border border-app-border bg-surface px-2.5 py-1 text-[11px] font-medium text-text-sub transition-colors hover:border-primary hover:text-primary active:scale-95"
+                  className="w-full truncate rounded-full border border-app-border bg-surface px-2.5 py-1.5 text-center text-[11px] font-medium text-text-sub transition-colors hover:border-primary hover:text-primary active:scale-95"
                 >
                   {lbl}
                 </button>
               ))}
             </div>
 
-            {/* Date inputs */}
-            <div className="mb-3 grid grid-cols-2 gap-2">
+            {/* Date inputs are stacked so the full date is always visible —
+                side-by-side native date fields get clipped on narrow phones. */}
+            <div className="mb-3 space-y-2.5">
               <div>
                 <label className="mb-1 block text-[11px] font-medium text-text-sub">{t('an.from')}</label>
                 <input
@@ -248,7 +250,7 @@ export default function Analytics() {
                   value={startDate}
                   max={endDate || todayStr()}
                   onChange={(e) => { setStartDate(e.target.value); setRangeError(''); }}
-                  className="w-full rounded-xl border border-app-border bg-surface px-2.5 py-2 text-xs text-text-main outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-app-border bg-surface px-3 py-2 text-sm text-text-main outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -259,7 +261,7 @@ export default function Analytics() {
                   min={startDate}
                   max={todayStr()}
                   onChange={(e) => { setEndDate(e.target.value); setRangeError(''); }}
-                  className="w-full rounded-xl border border-app-border bg-surface px-2.5 py-2 text-xs text-text-main outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-app-border bg-surface px-3 py-2 text-sm text-text-main outline-none focus:border-primary"
                 />
               </div>
             </div>
