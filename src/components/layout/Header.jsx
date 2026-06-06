@@ -13,7 +13,7 @@ function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-text-main shadow-soft-sm active:scale-90 transition-transform"
+      className="glass-btn flex h-9 w-9 items-center justify-center rounded-full text-text-main active:scale-90 transition-transform"
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
     </button>
@@ -24,14 +24,14 @@ export default function Header({ title, subtitle, showBack = false, right = null
   const navigate = useNavigate();
   const { t } = useT();
   return (
-    <header className="sticky top-0 z-30 bg-surface/85 px-5 pb-3 pt-[calc(env(safe-area-inset-top)+1.25rem)] backdrop-blur-md md:pt-6">
+    <header className="glass-bar sticky top-0 z-30 px-5 pb-3 pt-[calc(env(safe-area-inset-top)+1.25rem)] md:pt-6">
       <div className="flex items-center gap-3">
         {showBack && (
           <button
             type="button"
             onClick={() => navigate(-1)}
             aria-label={t('common.back')}
-            className="-ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft-sm active:scale-90"
+            className="glass-btn -ml-1 flex h-9 w-9 items-center justify-center rounded-full active:scale-90 transition-transform"
           >
             <ChevronLeft size={20} className="text-text-main" />
           </button>
@@ -46,7 +46,7 @@ export default function Header({ title, subtitle, showBack = false, right = null
             type="button"
             onClick={() => navigate('/settings')}
             aria-label={t('nav.settings')}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-text-main shadow-soft-sm active:scale-90 transition-transform"
+            className="glass-btn flex h-9 w-9 items-center justify-center rounded-full text-text-main active:scale-90 transition-transform"
           >
             <SettingsIcon size={18} />
           </button>

@@ -16,6 +16,13 @@
   --color-danger: 220 38 38;
   --color-warning: 217 151 6;
   --color-border: 229 231 235;
+
+  /* iOS 26 "Liquid Glass" material. Space-separated RGB channels so each use
+     can dial its own alpha; blur + saturation do the optical lensing, the
+     highlight paints the bright specular edge that sells the curved glass. */
+  --glass-tint: 255 255 255;
+  --glass-highlight: 255 255 255;
+  --glass-shadow: 27 67 50;
 }
 
 /* Dark theme: applied by toggling the `dark` class on <html>. */
@@ -31,6 +38,13 @@
   --color-danger: 248 113 113;
   --color-warning: 251 191 36;
   --color-border: 42 51 44;
+
+  /* Darker, slightly-lifted tint so the frosted pane still reads as glass
+     against the near-black surface; the specular highlight stays white but
+     much fainter, and the cast shadow goes pure black for depth. */
+  --glass-tint: 36 45 40;
+  --glass-highlight: 255 255 255;
+  --glass-shadow: 0 0 0;
 
   color-scheme: dark;
 }
@@ -104,6 +118,47 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* ---- iOS 26 Liquid Glass ---------------------------------------------- */
+  /* Full-bleed header bar: a clear translucent sheet that lenses + saturates
+     the content scrolling beneath it, capped by a specular top edge and a
+     hairline base so it floats above the page. -webkit- prefix is required
+     for backdrop-filter on iOS Safari (this app ships as a PWA). */
+  .glass-bar {
+    background-color: rgb(var(--glass-tint) / 0.55);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgb(var(--glass-highlight) / 0.14);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--glass-highlight) / 0.55),
+      0 1px 18px -12px rgb(var(--glass-shadow) / 0.6);
+  }
+  .dark .glass-bar {
+    background-color: rgb(var(--glass-tint) / 0.62);
+    border-bottom-color: rgb(var(--glass-highlight) / 0.08);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--glass-highlight) / 0.12),
+      0 1px 18px -12px rgb(var(--glass-shadow) / 0.7);
+  }
+
+  /* Liquid-glass control chip: a clear glass pill with a bright top rim and a
+     soft cast shadow so each button reads as a button floating on the bar. */
+  .glass-btn {
+    background-color: rgb(var(--glass-tint) / 0.5);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgb(var(--glass-highlight) / 0.5);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--glass-highlight) / 0.7),
+      0 4px 14px -6px rgb(var(--glass-shadow) / 0.35);
+  }
+  .dark .glass-btn {
+    background-color: rgb(var(--glass-tint) / 0.55);
+    border-color: rgb(var(--glass-highlight) / 0.16);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--glass-highlight) / 0.2),
+      0 4px 14px -6px rgb(var(--glass-shadow) / 0.6);
   }
 }
 
