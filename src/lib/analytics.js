@@ -1,5 +1,4 @@
 import {
-  addMonths,
   differenceInCalendarDays,
   eachDayOfInterval,
   endOfMonth,
@@ -280,17 +279,29 @@ export function foodEntriesInRange(entries, start, end) {
     });
 }
 
-/** Per-month income/expense/net rows covering the interval (oldest -> newest). */
-export function monthlyBreakdown(transactions, start, end) {
-  const out = [];
-  for (let cursor = startOfMonth(start); cursor <= end; cursor = addMonths(cursor, 1)) {
-    const { income, expense, net } = monthTotals(transactions, cursor);
-    out.push({
-      label: format(cursor, 'MMM yyyy', { locale: dfLocale() }),
+/**
+ * Per-month income/expense/net rows within an interval (oldest -> newest),
+ * counting only transactions inside [start, end] so partial months at the
+ * edges of the range stay exact. Used by multi-month PDF reports.
+ */
+export function monthlyBreakdownRange(transactions, start, end) {
+  const byMonth = new Map();
+  for (const t of transactions) {
+    const dt = d(t.date);
+    if (isWithinInterval(dt, { start, end })) {
+      const key = format(dt, 'yyyy-MM');
+      const prev = byMonth.get(key) || { income: 0, expense: 0 };
+      if (t.type === 'income') prev.income += t.amount;
+      else prev.expense += t.amount;
+      byMonth.set(key, prev);
+    }
+  }
+  return [...byMonth.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, { income, expense }]) => ({
+      label: format(parseISO(`${key}-01`), 'MMM yyyy', { locale: dfLocale() }),
       income,
       expense,
-      net,
-    });
-  }
-  return out;
+      net: income - expense,
+    }));
 }

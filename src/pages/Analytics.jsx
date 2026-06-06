@@ -1,4 +1,5 @@
 import { Suspense, useMemo, useState } from 'react';
+import { subMonths } from 'date-fns';
 import { lazyWithRetry } from '../lib/lazyWithRetry';
 import { motion } from 'framer-motion';
 import {
@@ -38,6 +39,13 @@ const DailyBarChart = lazyWithRetry(() => import('../components/charts/DailyBarC
 const ChartSkeleton = () => <div className="skeleton h-56 w-full rounded-xl" />;
 
 const FOOD_COLORS = ['#1B4332', '#40916C', '#52B788', '#95D5B2'];
+
+// Custom report range cap. 367 covers a full trailing year (leap-year
+// inclusive), so the "1 Tahun" preset always clears validation.
+const MAX_RANGE_DAYS = 367;
+
+const QUICK_CHIP_CLS =
+  'w-full truncate rounded-full border border-app-border bg-surface px-2.5 py-1.5 text-center text-[11px] font-medium text-text-sub transition-colors hover:border-primary hover:text-primary active:scale-95';
 
 function Section({ title, subtitle, children, className = '' }) {
   return (
@@ -150,10 +158,12 @@ export default function Analytics() {
   const hasExpense = byCategory.length > 0;
   const hasData = transactions.length > 0 || entries.length > 0;
 
-  const applyQuick = (days) => {
+  const applyPreset = ({ days, months }) => {
     const end = new Date();
-    const start = new Date();
-    if (days === 'month') {
+    let start = new Date();
+    if (months) {
+      start = subMonths(end, months);
+    } else if (days === 'month') {
       start.setDate(1);
     } else {
       start.setDate(end.getDate() - (days - 1));
@@ -169,7 +179,7 @@ export default function Analytics() {
     const e = new Date(endDate);
     if (e < s) { setRangeError(t('an.endBeforeStart')); return; }
     const diff = Math.round((e - s) / 86400000) + 1;
-    if (diff > 30) { setRangeError(t('an.maxDaysError')); return; }
+    if (diff > MAX_RANGE_DAYS) { setRangeError(t('an.maxDaysError')); return; }
     setRangeError('');
     setPickerOpen(false);
     if (downloading) return;
@@ -220,20 +230,37 @@ export default function Analytics() {
               {t('an.periodTitle')}
             </p>
 
-            {/* Quick shortcuts: fixed 2×2 grid so the chips stay aligned and
-                never wrap unevenly inside the narrow popover. */}
-            <div className="mb-3 grid grid-cols-2 gap-1.5">
+            {/* Quick shortcuts: short ranges in a 2×2 grid, then the longer
+                3 / 6 / 12-month presets in a 3-up row, so the chips stay
+                aligned and never wrap unevenly inside the narrow popover. */}
+            <div className="mb-1.5 grid grid-cols-2 gap-1.5">
               {[
-                { label: t('an.quick7'), days: 7 },
-                { label: t('an.quick14'), days: 14 },
-                { label: t('an.quickMonth'), days: 'month' },
-                { label: t('an.quick30'), days: 30 },
-              ].map(({ label: lbl, days }) => (
+                { key: '7d', label: t('an.quick7'), preset: { days: 7 } },
+                { key: '14d', label: t('an.quick14'), preset: { days: 14 } },
+                { key: 'month', label: t('an.quickMonth'), preset: { days: 'month' } },
+                { key: '30d', label: t('an.quick30'), preset: { days: 30 } },
+              ].map(({ key, label: lbl, preset }) => (
                 <button
-                  key={days}
+                  key={key}
                   type="button"
-                  onClick={() => applyQuick(days)}
-                  className="w-full truncate rounded-full border border-app-border bg-surface px-2.5 py-1.5 text-center text-[11px] font-medium text-text-sub transition-colors hover:border-primary hover:text-primary active:scale-95"
+                  onClick={() => applyPreset(preset)}
+                  className={QUICK_CHIP_CLS}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+            <div className="mb-3 grid grid-cols-3 gap-1.5">
+              {[
+                { key: '3m', label: t('an.quick3m'), preset: { months: 3 } },
+                { key: '6m', label: t('an.quick6m'), preset: { months: 6 } },
+                { key: '1y', label: t('an.quick1y'), preset: { months: 12 } },
+              ].map(({ key, label: lbl, preset }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  className={QUICK_CHIP_CLS}
                 >
                   {lbl}
                 </button>

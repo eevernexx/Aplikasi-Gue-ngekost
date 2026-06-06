@@ -7,6 +7,7 @@ import {
   foodBreakdownRange,
   rangeSummary,
   dailyBreakdownRange,
+  monthlyBreakdownRange,
   transactionsInRange,
   foodEntriesInRange,
   totalBalance,
@@ -77,13 +78,21 @@ export async function exportAnalyticsPdf({
   const byIncome  = incomeByCategoryRange(transactions, start, end);
   const food      = foodBreakdownRange(entries, start, end);
   const balance   = totalBalance(transactions);
-  const daily     = dailyBreakdownRange(transactions, start, end);
+  // Past ~1 month a per-day table runs to hundreds of rows, so multi-month
+  // reports summarise by calendar month instead of by day.
+  const useMonthly = totalDays > 31;
+  const breakdown  = useMonthly
+    ? monthlyBreakdownRange(transactions, start, end)
+    : dailyBreakdownRange(transactions, start, end);
   const txList    = transactionsInRange(transactions, start, end);
   const foodList  = foodEntriesInRange(entries, start, end);
+  // Approximate the span in months (30.44 = avg days/month) so the trailing
+  // 3/6/12-month presets resolve to exactly 3/6/12 for per-month averages.
+  const months    = Math.max(1, Math.round(totalDays / 30.44));
   const insights  = periodInsights(transactions, entries, monthlyBudget, {
     start,
     end: endOfDay(end),
-    months: Math.max(1, Math.ceil(totalDays / 30)),
+    months,
   });
 
   const savingsRate = income > 0 ? Math.round((net / income) * 100) : null;
@@ -296,23 +305,21 @@ export async function exportAnalyticsPdf({
     kv('Total Pengeluaran', formatRupiah(expense), DANGER, BGROW);
   }
 
-  // ─── 4. RINCIAN HARIAN ───────────────────────────────────────────────────
-  if (daily.length) {
-    sectionHeading('4. Rincian Harian (Hari Aktif)');
+  // ─── 4. RINCIAN BULANAN / HARIAN ─────────────────────────────────────────
+  if (breakdown.length) {
+    sectionHeading(useMonthly ? '4. Rincian Bulanan' : '4. Rincian Harian (Hari Aktif)');
     const cols4 = [
       { x: margin + 3,              maxW: 36 },
       { x: margin + contentW * 0.44, align: 'right' },
       { x: margin + contentW * 0.72, align: 'right' },
       { x: margin + contentW - 3,   align: 'right' },
     ];
-    tRow(['Tanggal', 'Pemasukan', 'Pengeluaran', 'Bersih'], cols4, { bold: true, colors: [SUB, SUB, SUB, SUB], bg: BGROW, fontSize: 8 });
-    let runNet = 0;
-    daily.forEach((d, i) => {
-      runNet += d.net;
+    tRow([useMonthly ? 'Bulan' : 'Tanggal', 'Pemasukan', 'Pengeluaran', 'Bersih'], cols4, { bold: true, colors: [SUB, SUB, SUB, SUB], bg: BGROW, fontSize: 8 });
+    breakdown.forEach((row, i) => {
       tRow(
-        [d.label, formatRupiah(d.income), formatRupiah(d.expense), formatRupiah(d.net)],
+        [row.label, formatRupiah(row.income), formatRupiah(row.expense), formatRupiah(row.net)],
         cols4,
-        { bg: i % 2 === 0 ? null : BGROW, colors: [TEXT, d.income > 0 ? GREEN : SUB, d.expense > 0 ? DANGER : SUB, d.net >= 0 ? GREEN : DANGER] }
+        { bg: i % 2 === 0 ? null : BGROW, colors: [TEXT, row.income > 0 ? GREEN : SUB, row.expense > 0 ? DANGER : SUB, row.net >= 0 ? GREEN : DANGER] }
       );
     });
     tRow(['Total', formatRupiah(income), formatRupiah(expense), formatRupiah(net)], cols4, {
