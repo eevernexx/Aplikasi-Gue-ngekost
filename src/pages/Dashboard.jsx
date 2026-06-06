@@ -100,7 +100,7 @@ export default function Dashboard() {
         className="flex flex-col gap-4 px-5 pt-1"
       >
         {/* Balance card */}
-        <motion.div variants={item} className="rounded-3xl bg-primary p-5 text-white shadow-soft">
+        <motion.div variants={item} className="glass-card-primary rounded-3xl p-5 text-white">
           <p className="text-xs font-medium text-white/70">{formatDate(new Date())}</p>
           <div className="mt-3 flex items-center justify-between">
             <p className="text-sm text-white/80">{t('dash.balance')}</p>
@@ -140,7 +140,7 @@ export default function Dashboard() {
               key={a.labelKey}
               type="button"
               onClick={a.onClick}
-              className="flex flex-col items-center gap-1.5 rounded-2xl border border-app-border bg-card py-3 text-xs font-medium text-text-main shadow-soft-sm active:scale-95 transition-transform"
+              className="glass-card flex flex-col items-center gap-1.5 rounded-2xl py-3 text-xs font-medium text-text-main active:scale-95 transition-transform"
             >
               <a.icon size={20} className="text-primary" />
               {t(a.labelKey)}
@@ -149,7 +149,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Budget progress */}
-        <motion.div variants={item} className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+        <motion.div variants={item} className="glass-card rounded-2xl p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="font-semibold text-text-main">{t('dash.budgetMonth')}</span>
             <button
@@ -184,7 +184,7 @@ export default function Dashboard() {
             <div className="mb-2 flex items-center justify-between px-1">
               <h2 className="text-sm font-semibold text-text-main">{t('dash.recentTx')}</h2>
             </div>
-            <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
+            <div className="glass-card overflow-hidden rounded-2xl">
               {recent.length ? (
                 recent.map((tx, i) => (
                   <div key={tx.id} className={i > 0 ? 'border-t border-app-border' : ''}>
@@ -205,7 +205,7 @@ export default function Dashboard() {
                 <span className="text-xs text-text-sub">{t('dash.kcalApprox', { n: todayCalories })}</span>
               )}
             </div>
-            <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
+            <div className="glass-card overflow-hidden rounded-2xl">
               {todayFood.length ? (
                 todayFood.map((e, i) => (
                   <div

@@ -52,7 +52,7 @@ export default function FoodTracker() {
 
       <div className="space-y-4 px-5 pt-1">
         {/* Date nav */}
-        <div className="flex items-center justify-between rounded-2xl border border-app-border bg-card px-2 py-2 shadow-soft-sm">
+        <div className="glass-card flex items-center justify-between rounded-2xl px-2 py-2">
           <button
             type="button"
             aria-label={t('food.prevDay')}
@@ -74,7 +74,7 @@ export default function FoodTracker() {
         </div>
 
         {/* Daily summary */}
-        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-primary p-3 text-center text-white shadow-soft">
+        <div className="glass-card-primary grid grid-cols-3 gap-2 rounded-2xl p-3 text-center text-white">
           <div>
             <p className="text-lg font-bold">{summary.count}</p>
             <p className="text-[11px] text-white/70">{t('food.menu')}</p>
@@ -125,7 +125,7 @@ export default function FoodTracker() {
             })}
           </div>
         ) : (
-          <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm">
+          <div className="glass-card rounded-2xl">
             <EmptyState
               title={t('food.emptyTitle')}
               description={t('food.emptyDesc')}

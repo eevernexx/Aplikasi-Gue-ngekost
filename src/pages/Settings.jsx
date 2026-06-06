@@ -8,7 +8,7 @@ import { useT } from '../i18n';
 
 function Section({ icon: Icon, title, children }) {
   return (
-    <div className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+    <div className="glass-card rounded-2xl p-4">
       <div className="mb-3 flex items-center gap-2">
         {Icon && <Icon size={16} className="text-primary" />}
         <h2 className="text-sm font-semibold text-text-main">{title}</h2>

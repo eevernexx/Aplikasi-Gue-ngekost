@@ -49,7 +49,7 @@ const QUICK_CHIP_CLS =
 
 function Section({ title, subtitle, children, className = '' }) {
   return (
-    <div className={`rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm ${className}`}>
+    <div className={`glass-card rounded-2xl p-4 ${className}`}>
       <div className="mb-3">
         <h2 className="text-sm font-semibold text-text-main">{title}</h2>
         {subtitle && <p className="text-xs text-text-sub">{subtitle}</p>}
@@ -224,7 +224,7 @@ export default function Analytics() {
           <div
             role="dialog"
             aria-label={t('an.periodTitle')}
-            className="absolute -right-24 z-50 mt-2 w-72 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-app-border bg-card p-4 shadow-soft"
+            className="glass-card absolute -right-24 z-50 mt-2 w-72 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl p-4"
           >
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-text-sub">
               {t('an.periodTitle')}
@@ -337,7 +337,7 @@ export default function Analytics() {
             icon={Utensils}
             color="light"
           />
-          <div className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+          <div className="glass-card rounded-2xl p-4">
             <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-primary">
               <Flame size={18} />
             </span>
@@ -346,7 +346,7 @@ export default function Analytics() {
               {summary.topCategory}
             </p>
           </div>
-          <div className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+          <div className="glass-card rounded-2xl p-4">
             <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-warning/10 text-warning">
               <CalendarClock size={18} />
             </span>

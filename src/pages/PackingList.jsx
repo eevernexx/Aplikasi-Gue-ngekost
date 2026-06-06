@@ -113,7 +113,7 @@ export default function PackingList() {
                     <button
                       type="button"
                       onClick={() => navigate(`/packing/${trip.id}`)}
-                      className="w-full rounded-2xl border border-app-border bg-card p-4 text-left shadow-soft-sm"
+                      className="glass-card w-full rounded-2xl p-4 text-left"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -148,7 +148,7 @@ export default function PackingList() {
             })}
           </AnimatePresence>
         ) : (
-          <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm lg:col-span-2">
+          <div className="glass-card rounded-2xl lg:col-span-2">
             <EmptyState
               title={t('pack.emptyTitle')}
               description={t('pack.emptyDesc')}

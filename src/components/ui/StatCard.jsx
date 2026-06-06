@@ -24,7 +24,7 @@ export default function StatCard({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+      <div className="glass-card rounded-2xl p-4">
         <div className="skeleton mb-3 h-8 w-8 rounded-lg" />
         <div className="skeleton mb-2 h-3 w-20" />
         <div className="skeleton h-6 w-28" />
@@ -37,7 +37,7 @@ export default function StatCard({
     : `${prefix}${Math.round(animated).toLocaleString('id-ID')}${suffix}`;
 
   return (
-    <div className="rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+    <div className="glass-card rounded-2xl p-4">
       <div className="mb-3 flex items-center justify-between">
         {Icon && (
           <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${colorMap[color]}`}>

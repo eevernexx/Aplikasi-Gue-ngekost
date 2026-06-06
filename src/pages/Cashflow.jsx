@@ -44,7 +44,7 @@ export default function Cashflow() {
 
       <div className="space-y-4 px-5 pt-1">
         {/* Month picker */}
-        <div className="flex items-center justify-between rounded-2xl border border-app-border bg-card px-2 py-2 shadow-soft-sm">
+        <div className="glass-card flex items-center justify-between rounded-2xl px-2 py-2">
           <button
             type="button"
             aria-label={t('cf.prevMonth')}
@@ -65,7 +65,7 @@ export default function Cashflow() {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-app-border bg-card p-3 text-center shadow-soft-sm">
+        <div className="glass-card grid grid-cols-3 gap-2 rounded-2xl p-3 text-center">
           <div>
             <p className="text-[11px] text-text-sub">{t('cf.in')}</p>
             <p className="mt-0.5 text-xs font-bold text-primary-light">{formatRupiah(totals.income)}</p>
@@ -83,7 +83,7 @@ export default function Cashflow() {
         </div>
 
         {/* Tabs */}
-        <div className="flex rounded-xl bg-card p-1 shadow-soft-sm">
+        <div className="glass-card flex rounded-xl p-1">
           {[
             { key: 'expense', label: t('cf.tabExpense') },
             { key: 'income', label: t('cf.tabIncome') },
@@ -138,7 +138,7 @@ export default function Cashflow() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-app-border bg-card shadow-soft-sm">
+          <div className="glass-card rounded-2xl">
             <EmptyState
               title={tab === 'income' ? t('cf.emptyIncome') : t('cf.emptyExpense')}
               description={t('cf.emptyDesc', { month: getMonthYear(ref) })}

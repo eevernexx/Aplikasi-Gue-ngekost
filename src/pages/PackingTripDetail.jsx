@@ -59,7 +59,7 @@ function CategorySection({ trip, category, label, emoji, onAdd, onToggle, onDele
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-app-border bg-card shadow-soft-sm">
+    <div className="glass-card overflow-hidden rounded-2xl">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -148,7 +148,7 @@ export default function PackingTripDetail() {
 
       <div className="space-y-4 px-5 pt-1">
         {/* Progress card */}
-        <div className="flex items-center gap-4 rounded-2xl border border-app-border bg-card p-4 shadow-soft-sm">
+        <div className="glass-card flex items-center gap-4 rounded-2xl p-4">
           <CircularProgress value={progress} />
           <div className="min-w-0">
             <p className="text-xs text-text-sub">{t('pack.depart')}</p>
